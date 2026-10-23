@@ -128,13 +128,17 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         end
     end
 
-    local function restart()
+    -- `value` is what the caller has already worked out. Recomputing it here would read `B.may_shrink`
+    -- after it has been put down, and a shrink would then write back the very number it is leaving
+    -- behind: the file would never change, the comparison in `settle` would never agree, and the bar
+    -- would restart for ever.
+    local function restart(value)
         if B.busy then return end
         B.busy = true
         show()
         with_dirs(function(d)
             local plm = d.conf .. "/vitreus.plm"
-            local value = file_for()
+            local value = value or file_for()
             run("sed", { "-i", "-E", "/^    surface \\{/s/screens: [^;]*;/screens: " .. value .. ";/", plm }, function(_, code)
                 if code ~= 0 then
                     B.busy = false
@@ -155,7 +159,7 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         if not B.awake then return end
         local value = file_for()
         B.may_shrink = false
-        if value ~= B.file then restart() else publish() end
+        if value ~= B.file then restart(value) else publish() end
     end
 
     local function read_mons()
