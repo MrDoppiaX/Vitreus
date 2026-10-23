@@ -1,15 +1,18 @@
--- The Bar page of the settings: which monitors the bar shows on, one or two of them (never more: `MAX`). The scene is always one copy per
--- monitor (`screens: each max 4`: what each copy holds of its own is named per copy, `name.$screen`, which only a copy per monitor has),
--- and the copies of the monitors that are not chosen are closed: each copy knows its monitor by name (`screen.K.name`), and this says
+-- The Bar page of the settings: which monitors the bar shows on, any of them up to `MAX`, which is what the page's row of tiles
+-- shows and what the scene declares (`bar_c0` to `bar_c3`). The scene is one copy per monitor (`screens: each max N`: what each copy
+-- holds of its own is named per copy, `name.$screen`, which only a copy per monitor has), and **N follows the monitors that are
+-- plugged in**: a desk of three gets three copies, a desk of one pays for one. Growing is at once, because a monitor without a copy
+-- shows nothing at all, not even the frame; shrinking waits for the next start, so unplugging does not restart the bar.
+-- The copies of the monitors that are not chosen are closed: each copy knows its monitor by name (`screen.K.name`), and this says
 -- which of them are chosen (`bar_c0` to `bar_c3`), so choosing takes effect at once. A vitreus.plm from before, whose `screens:` names
 -- one monitor, is moved over once: that line is rewritten and the bar started again, from a command left running on its own (`setsid`)
 -- that asks this one to quit and then opens the scene afresh. What was chosen is kept in bar.json (a list of names; from before, one
--- name or "all", which is the first two monitors); a chosen monitor that is not plugged in is left out until it is back, and with none
--- of them plugged in the bar is on the first two. With `others: "frame"` in bar.json (Settings > Bar, "Frame on the other monitors")
+-- name or "all"); a chosen monitor that is not plugged in is left out until it is back, and with none of them plugged in the bar
+-- is on every monitor there is, up to `MAX`. With `others: "frame"` in bar.json (Settings > Bar, "Frame on the other monitors")
 -- the copies of the other monitors stay open with the frame and its notches (launcher, Settings, desk) and no bar.
 return function(with_dirs)
-    local MAX = 2                    -- the bar is on two monitors at the most
-    local B = { pref = nil, file = nil, mons = {}, busy = false, awake = false, others = false }
+    local MAX = 4                    -- as many as the page shows in its row of tiles and the scene declares (`bar_c0`…`bar_c3`)
+    local B = { pref = nil, file = nil, mons = {}, busy = false, awake = false, others = false, may_shrink = true }
     local RESTART = [[
 P="$1"; L="$2"
 export PATH="$HOME/.local/bin:$PATH"
@@ -40,9 +43,26 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         end
         return out
     end
-    -- What `screens:` has to say: always every monitor (a file from before says one name, and is moved over).
+    -- How many copies the scene should hold: one for every monitor that is plugged in, so a desk of three or four
+    -- is served and a desk of one does not pay for copies it has no monitors for. Growing happens as soon as a
+    -- monitor appears, because a monitor without a copy of its own shows nothing at all, not even the frame;
+    -- shrinking happens only in the first settle after starting, so unplugging a monitor in the middle of the day
+    -- does not restart the bar. (A file from before says one monitor's name, and is moved over.)
+    local function want()
+        local n = #B.mons
+        if n < 1 then n = 1 elseif n > MAX then n = MAX end
+        if not B.may_shrink then
+            local have = tonumber((B.file or ""):match("^each max (%d+)") or "")
+            if have and have > n then n = have end
+        end
+        return n
+    end
     local function file_for()
-        return "all"
+        return "each max " .. want()
+    end
+    -- Whether the scene is one copy per monitor at all, rather than a file from before naming a single one.
+    local function spread()
+        return B.file ~= nil and B.file:match("^each") ~= nil
     end
 
     -- Open the copies of the chosen monitors and close the others. Each copy says which monitor it is (`screen.K.name`, empty until it knows).
@@ -50,10 +70,13 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         if #B.mons == 0 then return end
         local set = {}
         for _, n in ipairs(chosen()) do set[n] = true end
-        for k = 0, 3 do
+        -- A copy that does not know its monitor yet: the first few are lit, as many as there are monitors, so a copy the
+        -- scene does not have (`each max N` with N below MAX) is never lit and the bar is there from the first frame.
+        local blind = math.min(#B.mons, MAX)
+        for k = 0, MAX - 1 do
             local name = text["screen." .. k .. ".name"]
             local on
-            if name == nil or name == "" then on = k < MAX else on = set[name] == true end
+            if name == nil or name == "" then on = k < blind else on = set[name] == true end
             if fact["bar_c" .. k] ~= on then fact["bar_c" .. k] = on end
         end
     end
@@ -61,7 +84,7 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
     -- Tell the window gaps where the bar is and what is plugged in.
     local told = nil
     local function publish()
-        if B.file ~= "all" or #B.mons == 0 then return end
+        if not spread() or #B.mons == 0 then return end
         local names = {}
         for _, m in ipairs(B.mons) do names[#names + 1] = m.name end
         local sel = chosen()
@@ -111,7 +134,7 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         show()
         with_dirs(function(d)
             local plm = d.conf .. "/vitreus.plm"
-            local value = "each max 4"
+            local value = file_for()
             run("sed", { "-i", "-E", "/^    surface \\{/s/screens: [^;]*;/screens: " .. value .. ";/", plm }, function(_, code)
                 if code ~= 0 then
                     B.busy = false
@@ -130,7 +153,9 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
     local function settle()
         if B.busy or B.file == nil or #B.mons == 0 then return end
         if not B.awake then return end
-        if file_for() ~= B.file then restart() else publish() end
+        local value = file_for()
+        B.may_shrink = false
+        if value ~= B.file then restart() else publish() end
     end
 
     local function read_mons()
@@ -182,7 +207,7 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         if chosen_now then
             if #now == 0 then B.note = "The bar needs a monitor." else sel = now end
         elseif #sel >= MAX then
-            B.note = "The bar is on two monitors at the most: let one go first."
+            B.note = "The bar is on " .. MAX .. " monitors at the most: let one go first."
         else
             sel[#sel + 1] = m.name
         end
@@ -211,8 +236,9 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         run("grep", { "-o", "-m1", "-E", "screens: [^;]*;", d.conf .. "/vitreus.plm" }, function(out)
             local v = (out or ""):match("screens:%s*(.-)%s*;")
             if v == nil then return end
-            B.file = v:match('^"([^"]+)"') or "all"
-            if B.pref == nil and B.file ~= "all" then B.pref = { B.file } end
+            B.file = v
+            local named = v:match('^"([^"]+)"')
+            if B.pref == nil and named then B.pref = { named } end
             show()
             publish()
             settle()

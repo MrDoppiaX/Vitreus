@@ -64,7 +64,8 @@ scene Vitreus {
     let wcol.ink = rgb(wcol_ink_r, wcol_ink_g, wcol_ink_b)
     let wcol.mint = rgb(wcol_mint_r, wcol_mint_g, wcol_mint_b)
     let wcol.alert = rgb(wcol_alert_r, wcol_alert_g, wcol_alert_b)
-    //  One copy per monitor always (`screens: each`): what each copy holds of its own (the notches, the bar's hovers, the dock's place) is named per
+    //  One copy per monitor always (`screens: each max N`, with N kept at the number of monitors plugged in by logic/bar_monitors.luau): what each
+    //  copy holds of its own (the notches, the bar's hovers, the dock's place) is named per
     //  copy (`name.$screen`), which only a copy per monitor has. With the bar on one monitor, the other copies are closed (`open:`, see `sb`), or keep
     //  the frame and its notches (Settings > Bar, "Frame on the other monitors": `bar_others`).
     //  The keyboard is `on_demand`, not `exclusive`: it is asked for every open copy at once (the `while` is not per copy), and Hyprland gave it, and the

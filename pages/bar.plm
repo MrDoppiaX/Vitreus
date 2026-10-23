@@ -20,7 +20,7 @@ part Bar {
                 on press bar_oth_hit { emit bar_others_toggle }
             }
 
-            //  One tile per monitor that is plugged in: a screen with the bar across its top. One or two are lit (the bar is on those); a lit one is let go by pressing it again.
+            //  One tile per monitor that is plugged in: a screen with the bar across its top. The lit ones are the ones the bar is on; a lit one is let go by pressing it again.
             repeat i in 0..4 {
                 let bmx = spx + (52 + i * 83) * pu
                 let bmlit = if(bar_sel.$i, 1, 0)
@@ -36,7 +36,7 @@ part Bar {
                     on press bar_m_hit.$i { emit bar_pick_scr(i) }
                 }
             }
-            group { scale: rs; pivot: floor(spx + 14 * pu + 0.5), floor(sby + 121 * pu + 0.5); text "One or two monitors. It moves at once." { at: floor(spx + 14 * pu + 0.5), floor(sby + 121 * pu + 0.5); anchor: left center; size: 15; width: (410 * pu) / rs; lines: 1; color: faint; family: "Space Grotesk" } }
+            group { scale: rs; pivot: floor(spx + 14 * pu + 0.5), floor(sby + 121 * pu + 0.5); text "Any of your monitors. It moves at once." { at: floor(spx + 14 * pu + 0.5), floor(sby + 121 * pu + 0.5); anchor: left center; size: 15; width: (410 * pu) / rs; lines: 1; color: faint; family: "Space Grotesk" } }
             group { scale: rs; pivot: floor(spx + 14 * pu + 0.5), floor(sby + 136 * pu + 0.5); text bar_msg { at: floor(spx + 14 * pu + 0.5), floor(sby + 136 * pu + 0.5); anchor: left center; size: 15; width: (410 * pu) / rs; lines: 1; color: mint; family: "Space Grotesk" } }
 
             //  ── Where the bar is: along the top (the default), or down the left edge with a frame round the screen ──
