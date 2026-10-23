@@ -12,6 +12,9 @@
 -- the copies of the other monitors stay open with the frame and its notches (launcher, Settings, desk) and no bar.
 return function(with_dirs)
     local MAX = 4                    -- as many as the page shows in its row of tiles and the scene declares (`bar_c0`…`bar_c3`)
+    local FPS_FREE = 480             -- `rate:`'s ceiling in the language: the scene is left to the monitor
+    local FPS = { FPS_FREE, 120 }    -- what the page offers, in the order of its chips: only one conditional
+                                     -- `rate:` clause is honoured, so there is one value to choose besides "Screen"
     local B = { pref = nil, file = nil, mons = {}, busy = false, awake = false, others = false, may_shrink = true }
     local RESTART = [[
 P="$1"; L="$2"
@@ -193,6 +196,27 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         end)
     end
 
+    -- What bar.json keeps: the chosen monitors, whether the others keep the frame, and the frame rate.
+    local function save(screens)
+        local fps = (B.fps and B.fps ~= FPS_FREE) and B.fps or nil
+        pcall(sys.call, "files.write", "bar.json", { screens = screens, others = B.others and "frame" or nil, fps = fps })
+    end
+
+    -- Settings > Bar: how many frames a second the bar paints. A 240 Hz screen has it paint a panel 240 times a
+    -- second, which costs while it lasts what a game at that rate costs; the animations last the same either way,
+    -- so this is less current, not less movement. The scene reads `bar_fps` in its `rate:`, so it takes at once
+    -- and nothing is restarted. FPS_FREE is `rate:`'s ceiling in the language, which is to say "no cap".
+    on("bar_pick_fps", function(n)
+        n = math.floor(tonumber(n) or 0)
+        for _, v in ipairs(FPS) do
+            if v == n then
+                B.fps = n
+                fact.bar_fps = n
+                return save(B.pref or chosen())
+            end
+        end
+    end)
+
     -- A tile of the Bar page: it joins the bar's monitors, or leaves them. One stays, and no more than MAX.
     on("bar_pick_scr", function(i)
         if B.busy then return end
@@ -212,7 +236,7 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
             sel[#sel + 1] = m.name
         end
         B.pref = sel
-        pcall(sys.call, "files.write", "bar.json", { screens = B.pref, others = B.others and "frame" or nil })
+        save(B.pref)
         show()
         if B.file ~= nil and file_for() ~= B.file then restart() else publish() end
     end)
@@ -220,7 +244,7 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
     -- Settings > Bar's switch: the frame on the other monitors, or nothing there. The scene is on every monitor already, so it is at once.
     on("bar_others_toggle", function()
         B.others = not B.others
-        pcall(sys.call, "files.write", "bar.json", { screens = chosen(), others = B.others and "frame" or nil })
+        save(B.pref or chosen())
         publish()
     end)
 
@@ -231,6 +255,11 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         elseif type(saved.screens) == "string" and saved.screens ~= "all" then B.pref = { saved.screens } end
     end
     if ok and type(saved) == "table" and saved.others == "frame" then B.others = true end
+    B.fps = FPS_FREE
+    if ok and type(saved) == "table" and type(saved.fps) == "number" then
+        for _, v in ipairs(FPS) do if v == saved.fps then B.fps = saved.fps end end
+    end
+    fact.bar_fps = B.fps
     -- What this bar was started with: the `screens:` of the scene's surface.
     with_dirs(function(d)
         run("grep", { "-o", "-m1", "-E", "screens: [^;]*;", d.conf .. "/vitreus.plm" }, function(out)
