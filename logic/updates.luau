@@ -191,8 +191,11 @@ exec pleamar --scene "$P" --no-hud >>"$L" 2>&1
         fact.about_restarting = true
         restart()
     end)
-    local function do_update()
-        if A.busy or (fact.about_behind or 0) <= 0 then return end
+    -- `resume`: the second half of an update that pleamar's own restart cut in two. pleamar is built by then, so only the
+    -- Vitreus step is left, and it must not depend on the "pleamar has updates" count (which is 0 by now).
+    local function do_update(resume)
+        if resume then A.pl_behind = 0 end
+        if A.busy or (not resume and (fact.about_behind or 0) <= 0) then return end
         -- pleamar first, then Vitreus (`pleamar-update` pulls its source and builds it, which takes minutes): the newest
         -- Vitreus files may need the newest pleamar, so they are only pulled once it is in place, and the shell is
         -- only started again after both. If pleamar fails, Vitreus is left as it was.
@@ -313,7 +316,7 @@ exit 0]]
         end
         pleamar_first()
     end
-    on("about_update", do_update)
+    on("about_update", function() do_update() end)
 
     -- A quiet check in the background (a minute and a half after the shell starts, then every six hours): when the remote has commits this
     -- checkout does not, ONE critical notification says so and lists what is new (the commits' subjects, newest first). It is sent once
@@ -361,7 +364,11 @@ exit 0]]
         local ok, saved = pcall(sys.ask, "files.read", "update-pending.json", "json")
         if ok and type(saved) == "table" and saved.pending == true then
             pcall(sys.call, "files.write", "update-pending.json", { pending = false })
-            check(do_update)
+            pcall(sys.call, "files.write", "update-trace.json", { step = "resumed", behind = "checking" })
+            check(function()
+                pcall(sys.call, "files.write", "update-trace.json", { step = "checked", shell_behind = A.shell_behind, busy = A.busy })
+                do_update(true)
+            end)
         end
     end)
 end
