@@ -827,6 +827,23 @@ scene Vitreus {
     event theme_pick ->
     fact snd_on = true               // Settings > Theme: the little sound when a panel opens
     event snd_toggle ->
+    //  Settings > Theme > Pin wallpaper (logic/theme_wallpaper.luau): a wallpaper of the gallery that comes with the theme in use, put up whenever
+    //  that theme is chosen. The row's thumbnail and line, and the picker over the page (a page of the gallery's thumbnails, the pinned one ringed).
+    fact tpw_on = false
+    text tpw_sub = ""
+    text tpw_path = ""
+    image tpw_img = from tpw_path, 260, 146
+    text tpw_title = ""
+    fact tpw_open = false
+    prop tpw_k = 0 ~calm
+    follow tpw_k = if(tpw_open, 1, 0)
+    model tpw max 16 { thumb: image 260, 146; sel: bool }
+    text tpw_pager = ""
+    event tpw_toggle ->
+    event tpw_choose ->
+    event tpw_pick ->
+    event tpw_prev ->
+    event tpw_next ->
     event iris_int_set ->
     fact iris_on = true             // Iris, the palette from the wallpaper, is on; off, the shell is monochrome
     event iris_toggle ->
@@ -1554,6 +1571,7 @@ scene Vitreus {
     prop trn = 0 ~calm                // how many tray icons the bar holds, smoothly: the bar widens with it
     prop disp_auto_pill = 0 ~pop
     prop snd_pill = 0 ~pop
+    prop tpw_pill = 0 ~pop           // Settings > Theme > Pin wallpaper's switch
     prop disp_dd = 0 ~calm            // the resolution dropdown, 0 shut .. 1 open
     prop disp_scroll = 0 ~quick       // the page's scroll, following disp_scroll_to
     prop disp_pn_s = 0 ~calm          // the profiles card's rows, smoothed: it grows and shrinks with them
@@ -2325,6 +2343,7 @@ scene Vitreus {
     follow ni_k0 = if(ni_single, 1, 0)
     follow disp_auto_pill = if(disp_auto, 1, 0)
     follow snd_pill = if(snd_on, 1, 0)
+    follow tpw_pill = if(tpw_on, 1, 0)
     follow disp_dd = if(disp_res_open, 1, 0)
     follow disp_scroll = disp_scroll_to
     follow disp_pn_s = disp_pcount
@@ -5060,7 +5079,7 @@ scene Vitreus {
     //  every click in the sidebar. A page taller than this scrolls inside it (they have their scroll thumb and "More" cue); a shorter one has
     //  empty glass at its foot. It never goes below the sidebar's last row.
     let th_ex = max(0, floor((themes.count + 3) / 4) - 1)      // rows of theme cards beyond the first (Settings > Theme)
-    let set.h = max(side.ab + 40, 456 + 88 * th_ex * set_pgp)
+    let set.h = max(side.ab + 40, 518 + 88 * th_ex * set_pgp)
     let ss.w = (120 + 500 * (min(1, ds0 * 1.6) + max(0, ds0 - 1) * 0.6)) * pu
     let ss.hh = bar.h / 2 + (8 + 36 + 8 + set.h + 16) * pu * ds0 + max(0, sag)
     //  The launcher: a drop that widens to the bar's width as it lands, like the calendar. The search field (40), the
