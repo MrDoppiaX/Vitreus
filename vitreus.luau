@@ -7122,6 +7122,16 @@ require("logic/addons")()
 -- the wallpaper hook for the add-on that frames wallpapers: see logic/wallpaper_hook.luau
 require("logic/wallpaper_hook")(wp_apply, function() return wp_cur end)
 
+-- Settings > Theme > Pin wallpaper (a wallpaper that comes with a theme): see logic/theme_wallpaper.luau
+require("logic/theme_wallpaper")({
+    apply = function(f) wp_apply(f) end,
+    cur = function() return wp_cur end,
+    files = function() return wp_files end,
+    crop = function(fs, done) if wp_cache then wp_crop(fs, "t", 260, 146, done) else done() end end,
+    thumb = function(f) local t = wp_cache and crop_path(f, "t"); return (t and wp_made[t] == true) and t or (wpv.is(f) and "" or f) end,
+    theme = function() if not vtheme.loaded then return nil end local t = vtheme.current(); return t.id, t.name end,
+})
+
 -- how big a notification is (Settings > Notifications): see logic/notif_size.luau
 require("logic/notif_size")()
 
