@@ -5,6 +5,17 @@ part Theme {
         group {
             show: set_pgp > 0.01
             opacity: set_pgp
+            //  The page scrolls inside the panel, as the Lock screen page does (the panel keeps one height): the wheel, the thumb at the side, and More.
+            let th.h = 518 + 88 * th_ex                 // the page: its cards, to the bottom of the last (Pin wallpaper)
+            let th.sc = clamp(th_scroll, 0, max(0, th.h - set.h))
+            let th.off = floor(th.sc * pu + 0.5)        // whole pixels: text that is shifted by a fraction of one is resampled, and looks soft
+            clip box { at: spx + 224 * pu, sby + set.h / 2 * pu; size: 456 * pu, set.h * pu }
+            zone box th_wheel { at: spx + 219 * pu, sby + set.h / 2 * pu; size: 446 * pu, set.h * pu }
+            on scroll th_wheel while not tpw_open { th_scroll_to = clamp(th_scroll_to - wheel * 44, 0, max(0, th.h - set.h)) }
+            on change set_page { th_scroll_to = 0 }
+            on change panel { th_scroll_to = 0 }
+            group {
+            move: 0, -th.off
             group { scale: rs; pivot: floor(spx + 14 * pu + 0.5), floor(sby + 16 * pu + 0.5); text "Theme" { at: floor(spx + 14 * pu + 0.5), floor(sby + 16 * pu + 0.5); anchor: left center; size: 19.5; weight: 700; color: ink; family: "Space Grotesk" } }
             group { scale: rs; pivot: floor(spx + 424 * pu + 0.5), floor(sby + 16 * pu + 0.5); text "Changes apply right away." { at: floor(spx + 424 * pu + 0.5), floor(sby + 16 * pu + 0.5); anchor: right center; size: 15; color: faint; opacity: 80%; family: "Space Grotesk" } }
             //  Glass, Retro, UwU, Cyber and whatever is in ~/.config/pleamar/vitreus-themes: a card each (the `themes` model, filled by the logic from the theme files),
@@ -45,7 +56,7 @@ part Theme {
                         ellipse { at: cx + 34 * pu, cy + 24 * pu; radius: 6.4 * pu; stroke: 1 * pu; color: ink; opacity: 28% }
                         ellipse { at: cx + 36 * pu, cy - 25 * pu; radius: 7 * pu; color: mint; opacity: if(theme_sel == i, 100%, 0) }
                         path { at: cx + 36 * pu, cy - 25 * pu; stroke: 1.5 * pu; color: onmint; opacity: if(theme_sel == i, 100%, 0); move -3 * pu, 0; line -0.9 * pu, 2.5 * pu; line 3.2 * pu, -2.7 * pu }
-                        zone box theme_hit.$i { at: cx, cy; size: 96 * pu, 76 * pu; corner: 14 * pu; cursor: pointer; active: i < themes.count; label: "Theme" }
+                        zone box theme_hit.$i { at: cx, cy; size: 96 * pu, 76 * pu; corner: 14 * pu; cursor: pointer; active: i < themes.count and cy - th.off > sby and cy - th.off < sby + set.h * pu; label: "Theme" }
                         on press theme_hit.$i { emit theme_pick(i) }
                     }
                 }
@@ -63,7 +74,7 @@ part Theme {
             box { from: fnt_x, fnt_y; size: fnt_w, 34 * pu; corner: 12 * pu; stroke: 1.2 * pu; color: mint; opacity: 70% * font_dd }
             group { scale: rs; pivot: floor(fnt_x + 14 * pu + 0.5), floor(fnt_y + 17 * pu + 0.5); text font_name { at: floor(fnt_x + 14 * pu + 0.5), floor(fnt_y + 17 * pu + 0.5); anchor: left center; size: 18; weight: 700; width: (fnt_w - 52 * pu) / rs; lines: 1; color: ink; family: "Space Grotesk" } }
             path { at: fnt_x + fnt_w - 20 * pu, fnt_y + 17 * pu; stroke: 1.6 * pu; color: ink; opacity: 60% + 40% * font_hit.hover; move -4 * pu, (-2 + 4 * font_dd) * pu; line 0, (2 - 4 * font_dd) * pu; line 4 * pu, (-2 + 4 * font_dd) * pu }
-            zone box font_hit { from: fnt_x, fnt_y; size: fnt_w, 34 * pu; corner: 12 * pu; cursor: pointer; label: "Font" }
+            zone box font_hit { from: fnt_x, fnt_y; size: fnt_w, 34 * pu; corner: 12 * pu; cursor: pointer; active: fnt_y + 17 * pu - th.off > sby and fnt_y + 17 * pu - th.off < sby + set.h * pu; label: "Font" }
             on press font_hit { toggle font_dd_open; emit font_open; focus font_q }
             //  Apply: only while the choice differs from what is in use. On the label's row, at the right, so the selector keeps its whole width.
             group {
@@ -72,7 +83,7 @@ part Theme {
                 PPillOutline(spx + 384 * pu, sby + (160 + 88 * th_ex) * pu, 80 * pu, 24 * pu, 12 * pu, font_apply_hit.hover, clamp(3 * (if(font_applying, 55%, 80% + 20% * font_apply_hit.hover)), 0, 1), pu)
                 group { scale: rs; pivot: floor(spx + 384 * pu + 0.5), floor(sby + (160 + 88 * th_ex) * pu + 0.5); text "Applying…" { at: floor(spx + 384 * pu + 0.5), floor(sby + (160 + 88 * th_ex) * pu + 0.5); anchor: center; align: center; size: 15.5; weight: 700; color: onmint; family: "Space Grotesk"; show: font_applying } }
                 group { scale: rs; pivot: floor(spx + 384 * pu + 0.5), floor(sby + (160 + 88 * th_ex) * pu + 0.5); text "Apply" { show: not font_applying; at: floor(spx + 384 * pu + 0.5), floor(sby + (160 + 88 * th_ex) * pu + 0.5); anchor: center; align: center; size: 15.5; weight: 700; color: onmint; family: "Space Grotesk" } }
-                zone box font_apply_hit { at: spx + 384 * pu, sby + (160 + 88 * th_ex) * pu; size: 80 * pu, 24 * pu; corner: 12 * pu; cursor: pointer; label: "Apply the font" }
+                zone box font_apply_hit { at: spx + 384 * pu, sby + (160 + 88 * th_ex) * pu; size: 80 * pu, 24 * pu; corner: 12 * pu; cursor: pointer; active: sby + (160 + 88 * th_ex) * pu - th.off > sby and sby + (160 + 88 * th_ex) * pu - th.off < sby + set.h * pu; label: "Apply the font" }
                 on press font_apply_hit { emit font_apply }
             }
             //  The preview: the typeface drawn as it will be, with what it will say.
@@ -87,7 +98,7 @@ part Theme {
             group { scale: rs; pivot: floor(spx + 14 * pu + 0.5), floor(sby + (422 + 88 * th_ex) * pu + 0.5); text "Panel sound" { at: floor(spx + 14 * pu + 0.5), floor(sby + (422 + 88 * th_ex) * pu + 0.5); anchor: left center; size: 16.5; weight: 700; color: ink; family: "Space Grotesk" } }
             group { scale: rs; pivot: floor(spx + 350 * pu + 0.5), floor(sby + (422 + 88 * th_ex) * pu + 0.5); text "Play a sound when a panel opens" { at: floor(spx + 350 * pu + 0.5), floor(sby + (422 + 88 * th_ex) * pu + 0.5); anchor: right center; size: 14.5; color: faint; family: "Space Grotesk" } }
             SettingsSwitch(spx + 424 * pu, sby + (422 + 88 * th_ex) * pu, snd_pill, snd_hit.pressed, snd_hit.hover, mint)
-            zone box snd_hit { at: spx + 405 * pu, sby + (422 + 88 * th_ex) * pu; size: 46 * pu, 30 * pu; cursor: pointer; label: "Panel sound" }
+            zone box snd_hit { at: spx + 405 * pu, sby + (422 + 88 * th_ex) * pu; size: 46 * pu, 30 * pu; cursor: pointer; active: sby + (422 + 88 * th_ex) * pu - th.off > sby and sby + (422 + 88 * th_ex) * pu - th.off < sby + set.h * pu; label: "Panel sound" }
             on press snd_hit { emit snd_toggle }
             //  Pin wallpaper: a wallpaper of the gallery that comes with the theme in use (logic/theme_wallpaper.luau). Off by default: a theme keeps the
             //  wallpaper that is up. The switch pins the one up now; Change picks another from the gallery, over the page.
@@ -114,10 +125,10 @@ part Theme {
             PPillOutline(spx + 336 * pu, tpw.y, 72 * pu, 24 * pu, 12 * pu, tpw_ch_hit.hover, clamp(3 * (10% + 10% * tpw_ch_hit.hover), 0, 1), pu)
             box { at: spx + 336 * pu, tpw.y; size: 72 * pu, 24 * pu; corner: 12 * pu; stroke: 1.2 * pu; color: mint; opacity: 55% + 30% * tpw_ch_hit.hover }
             group { scale: rs; pivot: floor(spx + 336 * pu + 0.5), floor(tpw.y + 0.5); text "Change" { at: floor(spx + 336 * pu + 0.5), floor(tpw.y + 0.5); anchor: center; align: center; size: 13.5; weight: 700; color: mint; family: "Space Grotesk" } }
-            zone box tpw_ch_hit { at: spx + 336 * pu, tpw.y; size: 72 * pu, 24 * pu; corner: 12 * pu; cursor: pointer; label: "Choose the wallpaper for this theme"; active: set_page == pg_theme and not tpw_open }
+            zone box tpw_ch_hit { at: spx + 336 * pu, tpw.y; size: 72 * pu, 24 * pu; corner: 12 * pu; cursor: pointer; label: "Choose the wallpaper for this theme"; active: set_page == pg_theme and not tpw_open and tpw.y - th.off > sby and tpw.y - th.off < sby + set.h * pu }
             on press tpw_ch_hit { tpw_open = true; font_dd_open = false; emit tpw_choose }
             SettingsSwitch(spx + 424 * pu, tpw.y, tpw_pill, tpw_hit.pressed, tpw_hit.hover, mint)
-            zone box tpw_hit { at: spx + 405 * pu, tpw.y; size: 46 * pu, 30 * pu; cursor: pointer; label: "Pin the wallpaper to this theme"; active: set_page == pg_theme and not tpw_open }
+            zone box tpw_hit { at: spx + 405 * pu, tpw.y; size: 46 * pu, 30 * pu; cursor: pointer; label: "Pin the wallpaper to this theme"; active: set_page == pg_theme and not tpw_open and tpw.y - th.off > sby and tpw.y - th.off < sby + set.h * pu }
             on press tpw_hit { emit tpw_toggle }
             //  The dropdown, drawn last so its rows win the press over everything under it.
             zone box font_catch { at: spx + 219 * pu, sby + (290 + 88 * th_ex) * pu; size: 438 * pu, 330 * pu; active: font_dd_open }
@@ -150,9 +161,30 @@ part Theme {
                 box { at: fnt_x + fnt_w - 6 * pu, fnt_y + 38 * pu + 40 * pu + (font_sb_y + font_sb_h / 2) * 190 * pu; size: 3 * pu + 2 * pu * font_bar_hit.hover, max(8 * pu, font_sb_h * 190 * pu); corner: 1.5 * pu; color: mint; opacity: if(font_sb_h < 0.999, 55% + 35% * font_bar_hit.hover, 0%) }
                 //  The scrollbar is a handle: pressed or dragged, the list goes to where the pointer is along the track.
                 zone box font_bar_hit { at: fnt_x + fnt_w - 7 * pu, fnt_y + 38 * pu + 135 * pu; size: 14 * pu, 196 * pu; cursor: pointer; active: font_dd_open and font_sb_h < 0.999; label: "Font list scrollbar" }
-                on press font_bar_hit { emit font_bar(((pointer.y - ty.set) - (fnt_y + 38 * pu + 40 * pu)) / (190 * pu)) }
-                on drag font_bar_hit { emit font_bar(((pointer.y - ty.set) - (fnt_y + 38 * pu + 40 * pu)) / (190 * pu)) }
+                on press font_bar_hit { emit font_bar(((pointer.y - ty.set + th.off) - (fnt_y + 38 * pu + 40 * pu)) / (190 * pu)) }
+                on drag font_bar_hit { emit font_bar(((pointer.y - ty.set + th.off) - (fnt_y + 38 * pu + 40 * pu)) / (190 * pu)) }
             }
+            }
+            let th.thh = set.h * set.h / max(set.h, th.h)
+            let th.thy = th.thh / 2 + th.sc / max(1, th.h - set.h) * (set.h - th.thh)
+            box { at: spx + 442 * pu, sby + set.h / 2 * pu; size: 3 * pu, set.h * pu; corner: 1.5 * pu; color: ink; opacity: if(th.h > set.h, 6%, 0%) }
+            box { at: spx + 442 * pu, sby + th.thy * pu; size: 3 * pu, th.thh * pu; corner: 1.5 * pu; color: mint; opacity: if(th.h > set.h, 55%, 0%) }
+            let th.cue = clamp((th.h - set.h - th.sc) / 24, 0, 1) * (1 - tpw_k) * (1 - font_dd)
+            let th.cuey = sby + (set.h - 26) * pu + 2.5 * pu * sin(time * 270)
+            repeat i in 0..16 {
+                let fk = (i + 1) / 16
+                box { from: spx - 4 * pu, sby + (set.h - 56 + i * 3.5) * pu; size: 448 * pu, 3.5 * pu + 0.5; color: deep; opacity: 45% * fk * fk * th.cue }
+            }
+            box { at: spx + 224 * pu, th.cuey; size: 76 * pu, 26 * pu; corner: 13 * pu; color: deep; opacity: 80% * th.cue }
+            box { at: spx + 224 * pu, th.cuey; size: 76 * pu, 26 * pu; corner: 13 * pu; color: mint; opacity: (10% + 14% * th_cue_hit.hover) * th.cue }
+            path { at: spx + 204 * pu, th.cuey - 1 * pu; stroke: 1.6 * pu; color: mint; opacity: th.cue; move -4 * pu, -3 * pu; line 0, 1 * pu; line 4 * pu, -3 * pu }
+            path { at: spx + 204 * pu, th.cuey + 4 * pu; stroke: 1.6 * pu; color: mint; opacity: th.cue; move -4 * pu, -3 * pu; line 0, 1 * pu; line 4 * pu, -3 * pu }
+            group { scale: rs; pivot: floor(spx + 232 * pu + 0.5), floor(th.cuey + 0.5); text "More" { at: floor(spx + 232 * pu + 0.5), floor(th.cuey + 0.5); anchor: center; size: 16.5; weight: 700; color: ink; opacity: th.cue; family: "Space Grotesk" } }
+            zone box th_cue_hit { at: spx + 224 * pu, sby + (set.h - 26) * pu; size: 76 * pu, 26 * pu; corner: 13 * pu; cursor: pointer; active: th.cue > 0.5 }
+            on press th_cue_hit { th_scroll_to = clamp(th_scroll_to + 342, 0, max(0, th.h - set.h)) }
+            zone box th_bar_hit { at: spx + 442 * pu, sby + set.h / 2 * pu; size: 14 * pu, set.h * pu; cursor: pointer; active: th.h > set.h and not tpw_open }
+            on press th_bar_hit { th_scroll_to = clamp((((pointer.y - ty.set) - sby) / pu - th.thh / 2) / max(1, set.h - th.thh) * (th.h - set.h), 0, max(0, th.h - set.h)) }
+            on drag th_bar_hit { th_scroll_to = clamp((((pointer.y - ty.set) - sby) / pu - th.thh / 2) / max(1, set.h - th.thh) * (th.h - set.h), 0, max(0, th.h - set.h)) }
             //  ── The Pin wallpaper picker, over the page (drawn like the wallpaper page's folder browser): the gallery's wallpapers, sixteen at a
             //  time, with a pager. The one pressed is pinned to the theme in use and put up; the pinned one is ringed. ──
             on key Escape while tpw_open { tpw_open = false }
