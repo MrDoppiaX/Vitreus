@@ -23,7 +23,8 @@
       <td align="center"><img src="assets/screenshots/desk.webp" alt="The Desk: dragged off the edge, resized, and running the Focus timer" height="280" /><br /><sub>The Desk</sub></td>
     </tr>
   <tr>
-    <td align="center" colspan="2"><img src="assets/screenshots/lockscreen.webp" alt="The lock screen: the desktop blurs away, a glass clock and password field appear, and a wrong password flashes red" height="280" /><br /><sub>The lock screen</sub></td>
+    <td align="center"><img src="assets/screenshots/lockscreen.webp" alt="The lock screen: the desktop blurs away, a glass clock and password field appear, and a wrong password flashes red" height="280" /><br /><sub>The lock screen</sub></td>
+    <td align="center"><video src="assets/screenshots/themes-tour.webm" height="280" autoplay loop muted playsinline></video><br /><sub>Every theme: a notification, Controls, the Desk, Settings and Search</sub></td>
   </tr>
   </table>
 
