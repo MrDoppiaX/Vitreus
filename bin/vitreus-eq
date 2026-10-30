@@ -246,7 +246,8 @@ def reconcile():
     """Make what runs match what is wanted. Called on every command and every few seconds.
     The EQ takes over as the default output when it is switched on (`claim`), and then lets go: if the output is
     changed afterwards (the shell's output picker) that is the user's choice, the EQ is bypassed, and the filter
-    is just pointed at the output that was picked, so choosing "Vitreus EQ" again goes through it."""
+    stays on the output it was on (it does not follow the pick, so a TV picked for a while does not become what "Vitreus EQ" plays into);
+    it only moves when its output goes away, or when the EQ is switched off and on."""
     global target, error, claim
     with lock:
         if want_on:
@@ -268,12 +269,9 @@ def reconcile():
                 if d != SINK:
                     set_default(SINK)
                 claim = False
-            elif d and d != SINK and d != target:
-                stop_chain(None)                                   # pointed at the output that was picked
-                if start_chain(d):
-                    push_params()
             elif not sink_exists(target):
                 stop_chain(None)                                   # the output went away (a headset switched off): the next round starts again on the default
+            # (another output picked, d != target: it plays directly and the filter stays on its own target, so choosing "Vitreus EQ" again goes through it to the same output as before)
         else:
             claim = False
             if chain is not None:
