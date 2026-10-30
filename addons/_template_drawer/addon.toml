@@ -48,7 +48,12 @@ height = 420
 #   text widget_place   where it is, in your own words (cells, size, monitor...): Pin widgets reads it (`get widget_place`) and gives it back (`text widget_place ...`). Keep it
 #                       up to date whenever the widget moves, and take a value you gave as an order to go there; one you cannot use (a monitor that is not plugged in) is ignored.
 #   fact glide          (optional) a theme is putting the widgets back: move to the new place on a slower spring while it holds, instead of jumping.
+# With `menu = true` the tile does not show or hide it: it asks the add-on to open a menu of its own over the shelf (to add several widgets, one of each thing, say),
+#   text widget_mon_name, fact widget_mx, fact widget_my   the editor's monitor, and the middle of the tile and the top of the shelf on it, in pixels
+#   emit widget_menu                                      open it there (the add-on's surface is over the windows while `widget_edit` holds)
+# and the tile is ticked while `widget_shown` is true (any of them is on the desktop).
 # The grid the shell's widgets snap to: 28 columns and 16 rows, from 16 px inside the room the bar takes (`room_t/r/b/l`, which every add-on is told). The editor shows its dots.
 # [widget]
 # name = "My widget"     # up to 16 characters (the add-on's name if left out)
 # icon = "icon.svg"      # its picture on the tile: an .svg or .png in this folder, one colour (the shell tints it)
+# menu = false           # true: the tile opens the add-on's own menu instead of showing or hiding the widget (see above)

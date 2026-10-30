@@ -301,7 +301,7 @@ return function()
             for _, a in ipairs(list) do
                 if a.id == id and enabled[a.id] and a.widget then
                     for _, sk in ipairs(addon_scenes) do
-                        if sk == a.sock then out[#out + 1] = { id = a.id, sock = a.sock, name = a.widget.name, icon = type(a.widget.icon) == "string" and a.widget.icon or "" } end
+                        if sk == a.sock then out[#out + 1] = { id = a.id, sock = a.sock, name = a.widget.name, icon = type(a.widget.icon) == "string" and a.widget.icon or "", menu = a.widget.menu == true } end
                     end
                 end
             end
@@ -312,7 +312,7 @@ return function()
         local lines = {}
         for k, wd in ipairs(addon_widgets()) do
             if k > 4 then break end         -- (as many as the editor's shelf has room for)
-            lines[#lines + 1] = wd.sock .. "\t" .. wd.name .. "\t" .. wd.icon
+            lines[#lines + 1] = wd.sock .. "\t" .. (wd.menu and "menu" or "") .. "\t" .. wd.name .. "\t" .. wd.icon
         end
         text.aw_list = table.concat(lines, "\n")
     end
