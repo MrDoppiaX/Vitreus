@@ -597,7 +597,7 @@ end
 local function nt_render()
     local rows = {}
     for i, h in ipairs(nt_hist) do
-        if i > 30 then break end
+        if i > 50 then break end
         -- one line each: a body with line breaks (a list) would otherwise spill over the row under it
         local title = ((h.title or ""):gsub("%s+", " "))
         local body = ((h.body or ""):gsub("%s+", " "))

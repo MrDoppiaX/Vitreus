@@ -643,7 +643,7 @@ part Dashboard {
                 text "Clear" { at: dDc.x, dD.t + 32; anchor: center; size: 14; weight: 600; family: "Space Grotesk"; color: ink; show: nt_hist.count > 0 }
                 zone box dsh_clr { at: dDc.x, dD.t + 32; size: 64, 32; corner: 16; cursor: pointer; active: dash_open and nt_hist.count > 0; label: "Clear notifications" }
                 on press dsh_clr { emit nt_clear }
-                //  The list: every notification kept (up to 30), clipped to the room under the header and moved with the wheel.
+                //  The list: every notification kept (up to 50), clipped to the room under the header and moved with the wheel.
                 group {
                     clip inset 0 box { from: dD.l + 8, dDv.t; size: dD.w - 16, dDv.h; corner: 18 }
                     repeat i in 0..30 {

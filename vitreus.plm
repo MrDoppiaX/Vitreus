@@ -945,7 +945,7 @@ scene Vitreus {
     fact caf_avail = true          // hypridle is installed: there is something to hold off
     event togglednd ->
     //  The notifications module: Do Not Disturb with a timer, and the history of what came in.
-    model nt_hist max 30 { title: text; sub: text; when: text }
+    model nt_hist max 50 { title: text; sub: text; when: text }
     text nt_tile_sub = ""          // the tile's second line: Silenced · 23:41, 12 in history, All clear
     text dnd_left = ""             // the window's DND row: 23:41 left, On until turned off, Off
     text dnd_big = "Off"            // the window's big words: the time left, On, Quiet or Off
