@@ -478,6 +478,7 @@ scene Vitreus {
     event hy_follow_set ->
     event hy_toggle ->
     event hy_refresh ->
+    event motion_reduced ->
     event ni_center_set ->
     event ni_colw_set ->
     event ni_toggle ->
@@ -2347,6 +2348,7 @@ scene Vitreus {
     follow hy_k0 = if(hy_resize, 1, 0)
     follow hy_k1 = if(hy_tear, 1, 0)
     follow hy_k2 = if(hy_anim, 1, 0)
+    on change motion.reduced { emit motion_reduced(motion.reduced) }     // the system asks for less motion: the springs already settle by themselves, this turns off Hyprland's animations too
     follow hy_k3 = if(hy_nat, 1, 0)
     follow ni_k0 = if(ni_single, 1, 0)
     follow disp_auto_pill = if(disp_auto, 1, 0)

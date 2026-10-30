@@ -5446,16 +5446,17 @@ do
     end
 
     local function b(v) return v and "true" or "false" end
-    local function hy_code()
+    local hy_reduced = false      -- the system asks for less motion: Hyprland's animations are off meanwhile, live only (never written to vitreus_hypr.lua)
+    local function hy_code(saved)
         return string.format(
             "hl.config({ general = { gaps_in = %d, border_size = %d, layout = \"%s\", resize_on_border = %s, allow_tearing = %s }, " ..
             "decoration = { rounding = %d, blur = { enabled = %s, size = %d, passes = %d } }, animations = { enabled = %s }, input = { sensitivity = %.2f, follow_mouse = %d, touchpad = { natural_scroll = %s } } })",
-            hy.gaps, hy.border, LAYOUTS[hy.layout], b(hy.resize), b(hy.tear), hy.round, b(hy.blur_on), hy.blur, hy.passes, b(hy.anim), hy.sens, hy.follow, b(hy.nat))
+            hy.gaps, hy.border, LAYOUTS[hy.layout], b(hy.resize), b(hy.tear), hy.round, b(hy.blur_on), hy.blur, hy.passes, b(hy.anim and (saved or not hy_reduced)), hy.sens, hy.follow, b(hy.nat))
     end
 
     local function hy_write_file()
         local body = "-- Written by Vitreus (Settings > Hyprland); edits here are overwritten.\n" ..
-            "-- hyprland.lua loads it after hypr_style.lua, so it wins over the values there.\n" .. hy_code() .. "\n"
+            "-- hyprland.lua loads it after hypr_style.lua, so it wins over the values there.\n" .. hy_code(true) .. "\n"
         with_dirs(function(d)
             pcall(sys.call, "files.write", "vitreus_hypr.lua", body)
             local hypr = d.conf:gsub("/pleamar/shells/vitreus$", "/hypr")
@@ -5564,7 +5565,7 @@ do
             hy.passes = tonumber(vals[6]) or hy.passes
             hy.resize = vals[7] == "true"
             hy.tear = vals[8] == "true"
-            hy.anim = vals[9] == "true"
+            if not hy_reduced then hy.anim = vals[9] == "true" end
             hy.sens = tonumber(vals[10]) or 0
             hy.follow = tonumber(vals[11]) or 1
             hy.nat = vals[12] == "true"
@@ -5630,6 +5631,12 @@ do
         hy_changed()
     end)
     on("hy_refresh", function() hy_read() end)
+    on("motion_reduced", function(v)
+        local r = v > 0.5
+        if r == hy_reduced or on_niri then return end
+        hy_reduced = r
+        if hy.anim then run("hyprctl", { "eval", hy_code() }, function() end) end
+    end)
 end
 
 -- ── Settings > Pleamar-WM ─────────────────────────────────────────────────────────────────────────────────────
