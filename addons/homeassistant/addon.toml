@@ -4,7 +4,7 @@
 name        = "Home Assistant"
 description = "Your Home Assistant lights, switches, printer and Apple TV"
 author      = "datingesp-hash"
-version     = "0.2"
+version     = "0.3.1"
 vitreus_api = 1
 repo        = "datingesp-hash/HomeAssistant-Vitreus-Addon"
 
@@ -14,3 +14,9 @@ icon  = "icon.svg"
 [drawer]
 width  = 520
 height = 600
+
+# Desktop widgets: a card for each entity, placed and resized in Vitreus's desktop editor like its own widgets. The editor's tile opens a list of the entities
+# over its shelf (menu), to put a card on the desktop or take it off (widget.luau).
+[widget]
+name = "Home Assistant"
+menu = true

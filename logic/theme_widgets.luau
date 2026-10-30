@@ -21,7 +21,17 @@ return function(w)
         { scene = "desktopsysmon", shown = { "shown" }, facts = { "mon_name", "where", "gx", "gy", "shown" } },
         { scene = "desktopcards", shown = { "cal_shown", "rem_shown" }, facts = { "cal_mon_name", "cal_gx", "cal_gy", "rem_mon_name", "rem_gx", "rem_gy", "cal_shown", "rem_shown" } },
     }
-    local TEXTS = { mon_name = true, cal_mon_name = true, rem_mon_name = true }
+    local TEXTS = { mon_name = true, cal_mon_name = true, rem_mon_name = true, widget_place = true }
+    -- And the add-ons' desktop widgets (`[widget]` in their addon.toml), the ones running now: shown or not (`widget_shown`) and where, in the add-on's own words
+    -- (`widget_place`, a text it gives and takes back). An add-on is never started from here: it runs while its switch is on.
+    local function widgets()
+        local out = {}
+        for _, wd in ipairs(WIDGETS) do out[#out + 1] = wd end
+        for _, a in ipairs(w.addons and w.addons() or {}) do
+            out[#out + 1] = { scene = a.sock, shown = { "widget_shown" }, facts = { "widget_place", "widget_shown" }, addon = true }
+        end
+        return out
+    end
     local pins = {}
     local last = nil                 -- the theme the widgets were last put up for (what is kept when it is left)
 
@@ -53,7 +63,7 @@ return function(w)
     -- How many of them a snapshot has on the desktop.
     local function count(snap)
         local n = snap.fw_on and 1 or 0
-        for _, wd in ipairs(WIDGETS) do
+        for _, wd in ipairs(widgets()) do
             local s = snap[wd.scene]
             if type(s) == "table" then for _, k in ipairs(wd.shown) do if s[k] == true then n = n + 1 end end end
         end
@@ -79,8 +89,19 @@ return function(w)
     -- (the theme's last snapshot) has it: a widget's scene reloads when the theme rewrites the palette, and one caught reloading keeps what it had.
     local function snapshot(prev, done, quick)
         local snap = { fw_on = fw() }
-        local left = #WIDGETS
-        for _, wd in ipairs(WIDGETS) do
+        local list = widgets()
+        local left = #list
+        -- an add-on that is off now keeps what it had (it is put back once it is on again)
+        if prev then
+            for k, v in pairs(prev) do
+                if k ~= "fw_on" and type(v) == "table" then
+                    local here = false
+                    for _, wd in ipairs(list) do if wd.scene == k then here = true end end
+                    if not here then snap[k] = v end
+                end
+            end
+        end
+        for _, wd in ipairs(list) do
             local cmds = {}
             for _, k in ipairs(wd.facts) do cmds[#cmds + 1] = "get " .. k end
             local tries = 0
@@ -96,7 +117,7 @@ return function(w)
                             i = i + 1
                             local k = wd.facts[i]
                             if not k then break end
-                            local v = value(line)
+                            local v = TEXTS[k] and line:match("^%s*(.-)%s*$") or value(line)      -- (a text stays one, even when it looks like a number)
                             if v ~= "" then s[k] = v end
                         end
                     elseif prev and type(prev[wd.scene]) == "table" then
@@ -115,7 +136,7 @@ return function(w)
     -- Put a snapshot back: a widget that should be shown is started if its scene is not running, then given its place and shown; one that should not
     -- be is hidden (a scene that is not running is already hidden).
     local function restore(snap)
-        for _, wd in ipairs(WIDGETS) do
+        for _, wd in ipairs(widgets()) do
             local s = snap[wd.scene]
             if type(s) == "table" then
                 local want = false
@@ -139,7 +160,7 @@ return function(w)
                             say(wd.scene, all, function()
                                 after(2600, function() say(wd.scene, { "fact glide false" }) end)
                             end)
-                        elseif want then
+                        elseif want and not wd.addon then
                             w.start(wd.scene)
                             after(2500, function() say(wd.scene, cmds) end)
                         end

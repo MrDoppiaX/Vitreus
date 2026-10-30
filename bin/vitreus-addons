@@ -62,7 +62,22 @@ def read(folder, name):
         if not isinstance(wallpaper, dict) or not isinstance(wallpaper.get("frames", False), bool):
             raise ValueError("%s: [wallpaper] has to be a table, with frames = true or false" % name)
         wallpaper = {"frames": wallpaper.get("frames", False)}
-    return {"id": name, "icon": icon, "drawer": drawer, "wallpaper": wallpaper, "sock": os.path.splitext(os.path.basename(path))[0], "name": str(t.get("name", name))[:28], "author": str(t.get("author", ""))[:40],
+    widget = t.get("widget")
+    if widget is not None:
+        # A desktop widget: a tile of its own in the desktop editor (its name and picture), which shows or hides it, or opens the add-on's menu (`menu`). See the template's addon.toml.
+        if not isinstance(widget, dict):
+            raise ValueError("%s: [widget] has to be a table" % name)
+        wicon = widget.get("icon")
+        if wicon is not None:
+            wp = os.path.realpath(os.path.join(folder, str(wicon)))
+            if not wp.startswith(os.path.realpath(folder) + os.sep) or not os.path.isfile(wp) or os.path.splitext(wp)[1].lower() not in (".svg", ".png", ".webp", ".jpg", ".jpeg"):
+                raise ValueError("%s: [widget] icon has to be an .svg or .png file inside the add-on's folder" % name)
+            wicon = wp
+        if not isinstance(widget.get("menu", False), bool):
+            raise ValueError("%s: [widget] menu has to be true or false" % name)
+        wname = re.sub(r"[\t\r\n]", " ", str(widget.get("name", t.get("name", name))))[:16]       # (the shell lists it a line each, between tabs)
+        widget = {"name": wname, "icon": wicon or icon, "menu": widget.get("menu", False)}
+    return {"id": name, "icon": icon, "drawer": drawer, "wallpaper": wallpaper, "widget": widget, "sock": os.path.splitext(os.path.basename(path))[0], "name": str(t.get("name", name))[:28], "author": str(t.get("author", ""))[:40],
             "version": str(t.get("version", ""))[:12], "repo": repo_url(t.get("repo") or (remote.get(name) if os.path.realpath(os.path.dirname(folder)) == bundled else "")), "description": str(t.get("description", ""))[:80], "scene": path}
 
 if REMOVE:
