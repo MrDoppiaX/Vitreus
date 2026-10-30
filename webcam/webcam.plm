@@ -62,6 +62,9 @@ scene Webcam {
     //  A handle pulls from its side: the side across from it stays where it is (`fcx`, `fcy`), and the pane's size follows the pull.
     zone box zbody { at: cx, cy; size: S - 40, S - 40; corner: r - 20; cursor: if(zbody.pressed > 0.5, grabbing, grab); active: sh > 0.5 and gx >= 0 }
     on press zbody { rk = -1; bx = gx; by = gy }
+    //  A right click does nothing here, on purpose: a scene that never names the right button is closed by one (pleamar's way out of a prototype with no
+    //  keyboard), and the keeper starts it again a moment later, out of Edit mode: the widget went away and came back stuck.
+    on press right zbody { }
     on drag zbody while rk < 0 { gx = clamp(bx + drag.dx, vx0, max(vx0, vx1 - S)); gy = clamp(by + drag.dy, vy0, max(vy0, vy1 - S)) }
     //  Handle 0 (right)
     zone box zrs0 { at: cx + 1 * r, cy + 0 * r; size: 40, 40; corner: 20; cursor: ew_resize; active: sh > 0.5 and gx >= 0 }

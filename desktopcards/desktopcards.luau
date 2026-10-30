@@ -101,6 +101,7 @@ local function refresh_monitors()
                 for k = 1, 4 do if names[k] and names[k] == cfg[c].monitor then mine = k - 1 end end
                 fact[c .. "_mon"] = mine
                 if cfg[c].monitor == "" then cfg[c].monitor = names[1] or ""; save() end
+                text[c .. "_mon_name"] = names[mine + 1] or ""
             end
         end)
     end)
@@ -136,9 +137,21 @@ for _, c in ipairs(CARDS) do
     on("fact:" .. c .. "_shown", function(v) cfg[c].shown = v and true or false; save() end)
     on("fact:" .. c .. "_gx", function(v) if type(v) == "number" then cfg[c].gx = v; save() end end)
     on("fact:" .. c .. "_gy", function(v) if type(v) == "number" then cfg[c].gy = v; save() end end)
+    -- by the monitor's name (Settings > Theme > Pin widgets): only a monitor that is plugged in; another name leaves the card where it is
+    on("text:" .. c .. "_mon_name", function(t)
+        for k = 1, 4 do
+            if names[k] and names[k] == t then
+                fact[c .. "_mon"] = k - 1
+                if cfg[c].monitor ~= t then cfg[c].monitor = t; save() end
+                return
+            end
+        end
+        text[c .. "_mon_name"] = cfg[c].monitor      -- (not plugged in: it stays where it is, and says so)
+    end)
     on("fact:" .. c .. "_mon", function(v)
         local n = type(v) == "number" and names[math.max(0, math.min(3, math.floor(v + 0.5))) + 1]
         if n and n ~= cfg[c].monitor then cfg[c].monitor = n; save() end
+        if n then text[c .. "_mon_name"] = n end
     end)
 end
 

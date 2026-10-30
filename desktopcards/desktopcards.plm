@@ -114,6 +114,7 @@ scene DesktopCards {
     fact cal_gx = -1           // the cell of its top left corner (-1: the default one)
     fact cal_gy = -1
     fact cal_mon = 0           // which copy of the scene draws it (the logic keeps it)
+    text cal_mon_name = ""     // that monitor's name: set from outside (Settings > Theme > Pin widgets), a name it has not got is ignored
     fact cal_dragging = false
     prop cal_dg = 0 ~quick
     follow cal_dg = if(cal_dragging, 1, 0)
@@ -135,9 +136,18 @@ scene DesktopCards {
     prop cal_erx = 0 ~quick
     prop cal_ery = 0 ~quick
     follow cal_erx = if(cal_gx < 0, 0, cal_gx)
+    //  Settings > Theme > Pin widgets: while a theme puts the widgets back (`glide`, said by Vitreus), what is drawn slides to its new cell on a slower
+    //  spring instead of jumping to it.
+    fact glide = false
+    prop glp = 0 ~0ms                    // (at once: the slower spring is already where the widget is, so taking it over shows nothing)
+    follow glp = if(glide, 1, 0)
+    prop cal_gsx = 0 ~gentle
+    prop cal_gsy = 0 ~gentle
+    follow cal_gsx = if(cal_gx < 0, 0, cal_gx)
+    follow cal_gsy = if(cal_gy < 0, 0, cal_gy)
     follow cal_ery = if(cal_gy < 0, 0, cal_gy)
-    let cal_ex = clamp(mix(cal_gx0, cal_erx, edp), 0, gnx - cal_fw)
-    let cal_ey = clamp(mix(cal_gy0, cal_ery, edp), 0, gny - cal_fh)
+    let cal_ex = clamp(mix(mix(cal_gx0, cal_erx, edp), cal_gsx, glp), 0, gnx - cal_fw)
+    let cal_ey = clamp(mix(mix(cal_gy0, cal_ery, edp), cal_gsy, glp), 0, gny - cal_fh)
     let cal_x = gl + cal_ex * gw + 3          // the card, a little inside its cells
     let cal_y = gt + cal_ey * gh + 3
     let cal_w = cal_fw * gw - 6
@@ -155,6 +165,9 @@ scene DesktopCards {
     zone box cal_edz { from: if(cal_dragging, 0, cal_x), if(cal_dragging, 0, cal_y); size: if(cal_dragging, scw, cal_w), if(cal_dragging, sch, cal_h); corner: 20; cursor: pointer; active: edit and cal_shown and (cal_here > 0.5 or cal_dragging); label: "Move Calendar" }
     on press cal_edz { cal_pcx = cal_mox + gl + (cal_gx0 + cal_fw / 2) * gw; cal_pcy = cal_moy + gt + (cal_gy0 + cal_fh / 2) * gh; cal_dcx = cal_pcx; cal_dcy = cal_pcy; cal_zpx = cal_x; cal_zpy = cal_y; cal_dragging = true }
     on drag cal_edz { cal_dcx = cal_pcx + drag.dx; cal_dcy = cal_pcy + drag.dy }
+    //  A right click does nothing here, on purpose: a scene that never names the right button is closed by one (pleamar's way out of a prototype with no
+    //  keyboard), and the keeper starts it again a moment later, out of Edit mode: the widget went away and came back stuck.
+    on press right cal_edz { }
     on change cal_dcx { cal_mon = cal_tmon; cal_gx = clamp(floor((cal_dcx - cal_tox - gl) / cal_tgw - cal_fw / 2 + 0.5), 0, gnx - cal_fw); cal_gy = clamp(floor((cal_dcy - cal_toy - gt) / cal_tgh - cal_fh / 2 + 0.5), 0, gny - cal_fh) }
     on change cal_dcy { cal_mon = cal_tmon; cal_gx = clamp(floor((cal_dcx - cal_tox - gl) / cal_tgw - cal_fw / 2 + 0.5), 0, gnx - cal_fw); cal_gy = clamp(floor((cal_dcy - cal_toy - gt) / cal_tgh - cal_fh / 2 + 0.5), 0, gny - cal_fh) }
     on release cal_edz { cal_dragging = false; cal_mon = cal_tmon; cal_gx = clamp(floor((cal_dcx - cal_tox - gl) / cal_tgw - cal_fw / 2 + 0.5), 0, gnx - cal_fw); cal_gy = clamp(floor((cal_dcy - cal_toy - gt) / cal_tgh - cal_fh / 2 + 0.5), 0, gny - cal_fh) }
@@ -164,6 +177,7 @@ scene DesktopCards {
     fact rem_gx = -1           // the cell of its top left corner (-1: the default one)
     fact rem_gy = -1
     fact rem_mon = 0           // which copy of the scene draws it (the logic keeps it)
+    text rem_mon_name = ""     // (as the calendar's)
     fact rem_dragging = false
     prop rem_dg = 0 ~quick
     follow rem_dg = if(rem_dragging, 1, 0)
@@ -185,9 +199,13 @@ scene DesktopCards {
     prop rem_erx = 0 ~quick
     prop rem_ery = 0 ~quick
     follow rem_erx = if(rem_gx < 0, 22, rem_gx)
+    prop rem_gsx = 0 ~gentle              // (the Pin widgets slide, as the calendar's)
+    prop rem_gsy = 0 ~gentle
+    follow rem_gsx = if(rem_gx < 0, 22, rem_gx)
+    follow rem_gsy = if(rem_gy < 0, 0, rem_gy)
     follow rem_ery = if(rem_gy < 0, 0, rem_gy)
-    let rem_ex = clamp(mix(rem_gx0, rem_erx, edp), 0, gnx - rem_fw)
-    let rem_ey = clamp(mix(rem_gy0, rem_ery, edp), 0, gny - rem_fh)
+    let rem_ex = clamp(mix(mix(rem_gx0, rem_erx, edp), rem_gsx, glp), 0, gnx - rem_fw)
+    let rem_ey = clamp(mix(mix(rem_gy0, rem_ery, edp), rem_gsy, glp), 0, gny - rem_fh)
     let rem_x = gl + rem_ex * gw + 3          // the card, a little inside its cells
     let rem_y = gt + rem_ey * gh + 3
     let rem_w = rem_fw * gw - 6
@@ -205,6 +223,9 @@ scene DesktopCards {
     zone box rem_edz { from: if(rem_dragging, 0, rem_x), if(rem_dragging, 0, rem_y); size: if(rem_dragging, scw, rem_w), if(rem_dragging, sch, rem_h); corner: 20; cursor: pointer; active: edit and rem_shown and (rem_here > 0.5 or rem_dragging); label: "Move Reminders" }
     on press rem_edz { rem_pcx = rem_mox + gl + (rem_gx0 + rem_fw / 2) * gw; rem_pcy = rem_moy + gt + (rem_gy0 + rem_fh / 2) * gh; rem_dcx = rem_pcx; rem_dcy = rem_pcy; rem_zpx = rem_x; rem_zpy = rem_y; rem_dragging = true }
     on drag rem_edz { rem_dcx = rem_pcx + drag.dx; rem_dcy = rem_pcy + drag.dy }
+    //  A right click does nothing here, on purpose: a scene that never names the right button is closed by one (pleamar's way out of a prototype with no
+    //  keyboard), and the keeper starts it again a moment later, out of Edit mode: the widget went away and came back stuck.
+    on press right rem_edz { }
     on change rem_dcx { rem_mon = rem_tmon; rem_gx = clamp(floor((rem_dcx - rem_tox - gl) / rem_tgw - rem_fw / 2 + 0.5), 0, gnx - rem_fw); rem_gy = clamp(floor((rem_dcy - rem_toy - gt) / rem_tgh - rem_fh / 2 + 0.5), 0, gny - rem_fh) }
     on change rem_dcy { rem_mon = rem_tmon; rem_gx = clamp(floor((rem_dcx - rem_tox - gl) / rem_tgw - rem_fw / 2 + 0.5), 0, gnx - rem_fw); rem_gy = clamp(floor((rem_dcy - rem_toy - gt) / rem_tgh - rem_fh / 2 + 0.5), 0, gny - rem_fh) }
     on release rem_edz { rem_dragging = false; rem_mon = rem_tmon; rem_gx = clamp(floor((rem_dcx - rem_tox - gl) / rem_tgw - rem_fw / 2 + 0.5), 0, gnx - rem_fw); rem_gy = clamp(floor((rem_dcy - rem_toy - gt) / rem_tgh - rem_fh / 2 + 0.5), 0, gny - rem_fh) }

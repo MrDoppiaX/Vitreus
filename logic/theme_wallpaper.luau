@@ -24,9 +24,8 @@ return function(w)
         end
     end
     local function save() pcall(sys.call, "files.write", FILE, pins) end
-    local function base(path) return path:match("([^/]+)$") or path end
 
-    -- The row on the Theme page: the pinned wallpaper's thumbnail and a line about it.
+    -- The row on the Theme page: the pinned wallpaper's thumbnail (the switch says whether there is one), and the picker's title.
     local function show()
         local id, name = w.theme()
         if not id then return end
@@ -34,10 +33,8 @@ return function(w)
         fact.tpw_on = p ~= nil
         text.tpw_title = "Wallpaper for " .. name
         if p then
-            text.tpw_sub = base(p)
             w.crop({ p }, function() if pins[id] == p then text.tpw_path = w.thumb(p) end end)
         else
-            text.tpw_sub = "Off · " .. name .. " keeps the wallpaper up"
             text.tpw_path = ""
         end
     end

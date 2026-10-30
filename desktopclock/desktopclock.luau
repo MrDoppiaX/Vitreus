@@ -196,6 +196,7 @@ on("text:mon_name", function(t)
     for k = 1, 4 do
         if names[k] and names[k] == t then fact.mon = k - 1; cfg.monitor = t; save() return end
     end
+    text.mon_name = cfg.monitor      -- a monitor that is not plugged in (a theme's pinned one, Settings > Theme > Pin widgets): it stays where it is, and says so
 end)
 on("fact:cli", function(v) if type(v) == "number" then cfg.clarity = clampi(v, 0, 2); save() end end)
 for _, g in ipairs(GL) do

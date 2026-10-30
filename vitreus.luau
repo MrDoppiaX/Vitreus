@@ -7131,6 +7131,11 @@ require("logic/theme_wallpaper")({
     thumb = function(f) local t = wp_cache and crop_path(f, "t"); return (t and wp_made[t] == true) and t or (wpv.is(f) and "" or f) end,
     theme = function() if not vtheme.loaded then return nil end local t = vtheme.current(); return t.id, t.name end,
 })
+-- Settings > Theme > Pin widgets (the desktop widgets that come with a theme): see logic/theme_widgets.luau
+require("logic/theme_widgets")({
+    theme = function() if not vtheme.loaded then return nil end local t = vtheme.current(); return t.id, t.name end,
+    start = function(dir) exec_on_desktop('vitreus-keep "$HOME/.config/pleamar/shells/vitreus/' .. dir .. '/' .. dir .. '.plm"') end,
+})
 
 -- how big a notification is (Settings > Notifications): see logic/notif_size.luau
 require("logic/notif_size")()

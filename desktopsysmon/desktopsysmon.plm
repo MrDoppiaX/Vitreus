@@ -141,9 +141,18 @@ scene DesktopSysmon {
     prop erx = 0 ~quick
     prop ery = 0 ~quick
     follow erx = if(gx < 0, ex0, gx)      // (one for all the copies, so it must not depend on this monitor's size: `ex` clamps it)
+    //  Settings > Theme > Pin widgets: while a theme puts the widgets back (`glide`, said by Vitreus), what is drawn slides to its new cell on a slower
+    //  spring instead of jumping to it.
+    fact glide = false
+    prop glp = 0 ~0ms                    // (at once: the slower spring is already where the widget is, so taking it over shows nothing)
+    follow glp = if(glide, 1, 0)
+    prop gsx = 0 ~gentle
+    prop gsy = 0 ~gentle
+    follow gsx = if(gx < 0, ex0, gx)
+    follow gsy = if(gy < 0, ey0, gy)
     follow ery = if(gy < 0, ey0, gy)
-    let ex = clamp(mix(ex0, erx, edp), 0, gnx - fw)
-    let ey = clamp(mix(ey0, ery, edp), 0, gny - fh)
+    let ex = clamp(mix(mix(ex0, erx, edp), gsx, glp), 0, gnx - fw)
+    let ey = clamp(mix(mix(ey0, ery, edp), gsy, glp), 0, gny - fh)
     //  Where the card's top left corner is: against the grid's edge, or in the middle of its cells, and in between it moves from one to the other.
     //  What is drawn is 340 wide from x 30 and about 210 tall from y 8 inside the card's 400 x 280, so against an edge of the grid it is that, and not the card, that touches the margin.
     let cxm = gl + (ex + fw / 2) * gw - 200
@@ -180,6 +189,9 @@ scene DesktopSysmon {
     zone box edz { from: if(dragging, 0, zx), if(dragging, 0, zy); size: if(dragging, scw, ow), if(dragging, sch, oh); corner: 16; cursor: pointer; active: edit and shown and (here > 0.5 or dragging); label: "Move system" }
     on press edz { pcx = mox + gl + (ex0 + fw / 2) * gw; pcy = moy + gt + (ey0 + fh / 2) * gh; dcx = pcx; dcy = pcy; zpx = cx0; zpy = cy0; dragging = true }
     on drag edz { dcx = pcx + drag.dx; dcy = pcy + drag.dy }
+    //  A right click does nothing here, on purpose: a scene that never names the right button is closed by one (pleamar's way out of a prototype with no
+    //  keyboard), and the keeper starts it again a moment later, out of Edit mode: the widget went away and came back stuck.
+    on press right edz { }
     on change dcx { mon = tmon; gx = clamp(floor((dcx - tox - gl) / tgw - tfw / 2 + 0.5), 0, gnx - tfw); gy = clamp(floor((dcy - toy - gt) / tgh - tfh / 2 + 0.5), 0, gny - tfh) }
     on change dcy { mon = tmon; gx = clamp(floor((dcx - tox - gl) / tgw - tfw / 2 + 0.5), 0, gnx - tfw); gy = clamp(floor((dcy - toy - gt) / tgh - tfh / 2 + 0.5), 0, gny - tfh) }
     on release edz { dragging = false; mon = tmon; gx = clamp(floor((dcx - tox - gl) / tgw - tfw / 2 + 0.5), 0, gnx - tfw); gy = clamp(floor((dcy - toy - gt) / tgh - tfh / 2 + 0.5), 0, gny - tfh) }   // (the rules above read the frame before: once more, now that it is still)

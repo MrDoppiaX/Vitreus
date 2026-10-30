@@ -38,6 +38,7 @@ on("fact:open", function(v)
     local opened = v and true or false
     edit_widgets(opened)
     if opened then refresh(); refresh_cards() end
+    if not opened then run("pleamar", { "--say", "vitreus", "emit widgets_changed" }, function() end) end      -- (a theme that keeps its widgets takes them as they were left: Settings > Theme > Pin widgets)
 end)
 
 on("tile_do", function(i)

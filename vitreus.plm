@@ -830,7 +830,11 @@ scene Vitreus {
     //  Settings > Theme > Pin wallpaper (logic/theme_wallpaper.luau): a wallpaper of the gallery that comes with the theme in use, put up whenever
     //  that theme is chosen. The row's thumbnail and line, and the picker over the page (a page of the gallery's thumbnails, the pinned one ringed).
     fact tpw_on = false
-    text tpw_sub = ""
+    //  Settings > Theme > Pin widgets (logic/theme_widgets.luau): the desktop widgets that are on, and where, kept with the theme in use.
+    fact twg_on = false
+    text twg_sub = ""
+    event twg_toggle ->
+    event widgets_changed ->         // the desktop editor closed (desktopedit says so): a theme with its widgets pinned keeps them as they were left
     text tpw_path = ""
     image tpw_img = from tpw_path, 260, 146
     text tpw_title = ""
@@ -1572,6 +1576,7 @@ scene Vitreus {
     prop disp_auto_pill = 0 ~pop
     prop snd_pill = 0 ~pop
     prop tpw_pill = 0 ~pop           // Settings > Theme > Pin wallpaper's switch
+    prop twg_pill = 0 ~pop           // (and Pin widgets')
     prop disp_dd = 0 ~calm            // the resolution dropdown, 0 shut .. 1 open
     prop disp_scroll = 0 ~quick       // the page's scroll, following disp_scroll_to
     prop disp_pn_s = 0 ~calm          // the profiles card's rows, smoothed: it grows and shrinks with them
@@ -2347,6 +2352,7 @@ scene Vitreus {
     follow disp_auto_pill = if(disp_auto, 1, 0)
     follow snd_pill = if(snd_on, 1, 0)
     follow tpw_pill = if(tpw_on, 1, 0)
+    follow twg_pill = if(twg_on, 1, 0)
     follow disp_dd = if(disp_res_open, 1, 0)
     follow disp_scroll = disp_scroll_to
     follow disp_pn_s = disp_pcount
