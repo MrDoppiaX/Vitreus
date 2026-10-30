@@ -29,7 +29,7 @@ api     = 1
 [homeassistant]
 repo    = "datingesp-hash/HomeAssistant-Vitreus-Addon"
 path    = ""
-tag     = "v0.2"
-sha     = "24a69460b29e30da6cceaff7a4324d65f9789a7e"
+tag     = "v0.3"
+sha     = "e766a0964caad62e6abc5981dca0ee967f90223b"
 license = "MIT"
 api     = 1
