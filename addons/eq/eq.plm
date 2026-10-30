@@ -182,7 +182,7 @@ scene Equalizer {
             PLn(ax: x0 + (24 + k * 8) * u, ay: cy0 + ch0 / 2 - 9 * u, bx: x0 + (24 + k * 8) * u, by: cy0 + ch0 / 2 + 9 * u, s: 20 + k, wd: 1.8 * u, c: mix(faint, mint, con), a: shown, f: chot * fr)
             ellipse { at: x0 + (24 + k * 8) * u, cy0 + ch0 / 2 + (pick(k, 3, -4, 1) - 6 * pick(k, ls.1, ls.4, ls.7)) * u; radius: (3 + 1.5 * pick(k, ls.1, ls.4, ls.7)) * u; color: mix(faint, mint, con); opacity: 80% * shown }
         }
-        text "Equalizer" { at: x0 + 54 * u, cy0 + ch0 / 2 - 8.5 * u; anchor: left center; size: 13.5 * u; weight: 700; color: ink; opacity: shown; family: "Space Grotesk" }
+        text "Equalizer" { at: x0 + 54 * u, cy0 + ch0 / 2 - 8.5 * u; anchor: left center; size: 13.5 * u; weight: if(look == 4, 600, 700); color: ink; opacity: shown; family: "Space Grotesk" }
         text status { at: x0 + 54 * u, cy0 + ch0 / 2 + 8.5 * u; anchor: left center; size: 11 * u; weight: 600; width: wd - 110 * u; lines: 1; color: mix(faint, mint, con); opacity: shown; family: "Space Grotesk" }
         zone box card_z { from: x0, cy0; size: wd, ch0; corner: 12 * u; cursor: pointer; label: "Equalizer on or off"; active: shown > 0.5 }
         on press card_z { emit eq_toggle }
@@ -239,8 +239,11 @@ scene Equalizer {
         //  One piece of glass, drawn as the shell's audio visualiser draws the screen's edge (pages/bar_waves_*.plm): the same tint, rim, light and shadow, a floor and ten wide rounded columns standing on it,
         //  melted into each other (`blend`). Its silhouette IS the equalizer curve: each column is as tall as its band's gain (12 dB at the top of the area, -12 at the floor), and the live sound ripples on
         //  top of it. Drag the glass to shape it. A column with no length is moved off the surface, as there.
+        //  The glass takes the theme's own material, as the shell's frame does (pages/bar_glass.plm): Glass and Cyber (its tint taken to black) stay glass; the Cassette is lit plastic with a dark outline and a hard shadow,
+        //  the UwU a pastel candy with a grape outline and a pink shadow, the Milkbox two layers of one pale material (a white light up and left, a soft shade down and right), the Proxy a flat plate with a thin pale
+        //  outline and a hard offset edge. The plastics are solid, so they have no lens and no rim of glass.
         body {
-            color: mix(tint, mintlo, 0.2 * ea)
+            color: if(look == 3, #000000, mix(tint, mintlo, 0.2 * ea))
             glass: 100%
             opacity: shown
             lens: bend > 0.5
@@ -250,36 +253,60 @@ scene Equalizer {
             rim: 12%
             shine: pointer
             shadow: 0, 3 * u, 12 * u, 22%, deep
-            box { at: x0 + wd / 2, by1 - 1 * u; size: wd, 4 * u; corner: 2 * u; blend: 14 * u }
-            box { at: x0 + colw * 0.5 + if(clamp((gs.0 + 12) / 24 * bh + bh * (0.1 * ls.0 + 0.08 * fl.0), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.0 + 12) / 24 * bh + bh * (0.1 * ls.0 + 0.08 * fl.0), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.0 + 12) / 24 * bh + bh * (0.1 * ls.0 + 0.08 * fl.0), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 1.5 + if(clamp((gs.1 + 12) / 24 * bh + bh * (0.1 * ls.1 + 0.08 * fl.1), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.1 + 12) / 24 * bh + bh * (0.1 * ls.1 + 0.08 * fl.1), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.1 + 12) / 24 * bh + bh * (0.1 * ls.1 + 0.08 * fl.1), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 2.5 + if(clamp((gs.2 + 12) / 24 * bh + bh * (0.1 * ls.2 + 0.08 * fl.2), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.2 + 12) / 24 * bh + bh * (0.1 * ls.2 + 0.08 * fl.2), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.2 + 12) / 24 * bh + bh * (0.1 * ls.2 + 0.08 * fl.2), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 3.5 + if(clamp((gs.3 + 12) / 24 * bh + bh * (0.1 * ls.3 + 0.08 * fl.3), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.3 + 12) / 24 * bh + bh * (0.1 * ls.3 + 0.08 * fl.3), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.3 + 12) / 24 * bh + bh * (0.1 * ls.3 + 0.08 * fl.3), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 4.5 + if(clamp((gs.4 + 12) / 24 * bh + bh * (0.1 * ls.4 + 0.08 * fl.4), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.4 + 12) / 24 * bh + bh * (0.1 * ls.4 + 0.08 * fl.4), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.4 + 12) / 24 * bh + bh * (0.1 * ls.4 + 0.08 * fl.4), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 5.5 + if(clamp((gs.5 + 12) / 24 * bh + bh * (0.1 * ls.5 + 0.08 * fl.5), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.5 + 12) / 24 * bh + bh * (0.1 * ls.5 + 0.08 * fl.5), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.5 + 12) / 24 * bh + bh * (0.1 * ls.5 + 0.08 * fl.5), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 6.5 + if(clamp((gs.6 + 12) / 24 * bh + bh * (0.1 * ls.6 + 0.08 * fl.6), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.6 + 12) / 24 * bh + bh * (0.1 * ls.6 + 0.08 * fl.6), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.6 + 12) / 24 * bh + bh * (0.1 * ls.6 + 0.08 * fl.6), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 7.5 + if(clamp((gs.7 + 12) / 24 * bh + bh * (0.1 * ls.7 + 0.08 * fl.7), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.7 + 12) / 24 * bh + bh * (0.1 * ls.7 + 0.08 * fl.7), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.7 + 12) / 24 * bh + bh * (0.1 * ls.7 + 0.08 * fl.7), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 8.5 + if(clamp((gs.8 + 12) / 24 * bh + bh * (0.1 * ls.8 + 0.08 * fl.8), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.8 + 12) / 24 * bh + bh * (0.1 * ls.8 + 0.08 * fl.8), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.8 + 12) / 24 * bh + bh * (0.1 * ls.8 + 0.08 * fl.8), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 9.5 + if(clamp((gs.9 + 12) / 24 * bh + bh * (0.1 * ls.9 + 0.08 * fl.9), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.9 + 12) / 24 * bh + bh * (0.1 * ls.9 + 0.08 * fl.9), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.9 + 12) / 24 * bh + bh * (0.1 * ls.9 + 0.08 * fl.9), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
+            show: look == 0 or look == 3
+            include "eq-columns.plm"
+        }
+        body {
+            color: mix(tint, mint, 0.3)
+            rim: 40%
+            border: 1.7 * u, deep
+            shadow: 4.5 * u, 5.5 * u, 0, 55%, deep
+            opacity: shown
+            show: look == 1
+            include "eq-columns.plm"
+        }
+        body {
+            gradient: x0, by0 to x0 + wd, by1, #ffcfe8, #e6d6ff 38%, #cfeaff 68%, #d2fff0
+            rim: 55%
+            border: 3 * u, deep
+            shadow: 4 * u, 5 * u, 0, 90%, mix(deep, #ff6ec7, 0.75)
+            opacity: shown
+            show: look == 2
+            include "eq-columns.plm"
+        }
+        body {
+            color: mix(tint, mint, 0.35)
+            rim: 0%
+            shadow: -3 * u, -3 * u, 8 * u, 70%, #ffffff
+            opacity: shown
+            show: look == 4
+            include "eq-columns.plm"
+        }
+        body {
+            color: mix(tint, mint, 0.35)
+            rim: 0%
+            shadow: 3 * u, 4 * u, 10 * u, 55%, mix(deep, ink, 0.3)
+            opacity: shown
+            show: look == 4
+            include "eq-columns.plm"
+        }
+        body {
+            color: mix(tint, mint, 0.3)
+            rim: 0%
+            border: 1.4 * u, mix(#e8f1f5, tint, 0.4)
+            shadow: 2.5 * u, 3 * u, 0, 85%, deep
+            opacity: shown
+            show: look == 5
+            include "eq-columns.plm"
         }
         //  Every few seconds a band of light crosses the glass (glint.wgsl): a copy of its silhouette in a light colour, of which the shader keeps a moving diagonal band. Hidden between crossings.
         group {
             shader: glint, sw, 0.9
-            show: sw > 0.002
+            show: sw > 0.002 and look != 5
             body {
                 color: minthi
                 opacity: shown
-            box { at: x0 + wd / 2, by1 - 1 * u; size: wd, 4 * u; corner: 2 * u; blend: 14 * u }
-            box { at: x0 + colw * 0.5 + if(clamp((gs.0 + 12) / 24 * bh + bh * (0.1 * ls.0 + 0.08 * fl.0), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.0 + 12) / 24 * bh + bh * (0.1 * ls.0 + 0.08 * fl.0), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.0 + 12) / 24 * bh + bh * (0.1 * ls.0 + 0.08 * fl.0), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 1.5 + if(clamp((gs.1 + 12) / 24 * bh + bh * (0.1 * ls.1 + 0.08 * fl.1), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.1 + 12) / 24 * bh + bh * (0.1 * ls.1 + 0.08 * fl.1), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.1 + 12) / 24 * bh + bh * (0.1 * ls.1 + 0.08 * fl.1), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 2.5 + if(clamp((gs.2 + 12) / 24 * bh + bh * (0.1 * ls.2 + 0.08 * fl.2), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.2 + 12) / 24 * bh + bh * (0.1 * ls.2 + 0.08 * fl.2), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.2 + 12) / 24 * bh + bh * (0.1 * ls.2 + 0.08 * fl.2), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 3.5 + if(clamp((gs.3 + 12) / 24 * bh + bh * (0.1 * ls.3 + 0.08 * fl.3), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.3 + 12) / 24 * bh + bh * (0.1 * ls.3 + 0.08 * fl.3), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.3 + 12) / 24 * bh + bh * (0.1 * ls.3 + 0.08 * fl.3), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 4.5 + if(clamp((gs.4 + 12) / 24 * bh + bh * (0.1 * ls.4 + 0.08 * fl.4), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.4 + 12) / 24 * bh + bh * (0.1 * ls.4 + 0.08 * fl.4), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.4 + 12) / 24 * bh + bh * (0.1 * ls.4 + 0.08 * fl.4), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 5.5 + if(clamp((gs.5 + 12) / 24 * bh + bh * (0.1 * ls.5 + 0.08 * fl.5), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.5 + 12) / 24 * bh + bh * (0.1 * ls.5 + 0.08 * fl.5), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.5 + 12) / 24 * bh + bh * (0.1 * ls.5 + 0.08 * fl.5), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 6.5 + if(clamp((gs.6 + 12) / 24 * bh + bh * (0.1 * ls.6 + 0.08 * fl.6), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.6 + 12) / 24 * bh + bh * (0.1 * ls.6 + 0.08 * fl.6), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.6 + 12) / 24 * bh + bh * (0.1 * ls.6 + 0.08 * fl.6), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 7.5 + if(clamp((gs.7 + 12) / 24 * bh + bh * (0.1 * ls.7 + 0.08 * fl.7), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.7 + 12) / 24 * bh + bh * (0.1 * ls.7 + 0.08 * fl.7), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.7 + 12) / 24 * bh + bh * (0.1 * ls.7 + 0.08 * fl.7), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 8.5 + if(clamp((gs.8 + 12) / 24 * bh + bh * (0.1 * ls.8 + 0.08 * fl.8), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.8 + 12) / 24 * bh + bh * (0.1 * ls.8 + 0.08 * fl.8), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.8 + 12) / 24 * bh + bh * (0.1 * ls.8 + 0.08 * fl.8), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
-            box { at: x0 + colw * 9.5 + if(clamp((gs.9 + 12) / 24 * bh + bh * (0.1 * ls.9 + 0.08 * fl.9), 0, bh * 1.04) > 1, 0, 30000), by1 - (clamp((gs.9 + 12) / 24 * bh + bh * (0.1 * ls.9 + 0.08 * fl.9), 0, bh * 1.04) - 3 * u) / 2; size: colw * 1.3, clamp((gs.9 + 12) / 24 * bh + bh * (0.1 * ls.9 + 0.08 * fl.9), 0, bh * 1.04) + 3 * u; corner: colw * 0.55; blend: 14 * u }
+            include "eq-columns.plm"
             }
         }
         //  0 dB.

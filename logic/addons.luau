@@ -454,6 +454,7 @@ return function()
         save()
         show()
     end)
+    pcall(load_list)       -- the list the last run left (addons.json): the pill's icons are there at once; the scan below, once the shell is up, brings it up to date
     show()
     after(5000, function() refresh(true) end)       -- with the desktop's own scenes, once the shell is up
 end
