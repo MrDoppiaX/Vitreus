@@ -23,6 +23,10 @@ version     = "0.1"
 # flips `slot_open` in the scene (declare `fact slot_open = false`), so the add-on can show and hide its window. Take the # off to use it.
 # icon = "icon.svg"
 
+# Optional: a desktop widget the desktop editor can show, hide and place, like the shell's own: see `[widget]` in ../_template_drawer/addon.toml.
+# [widget]
+# name = "My widget"
+
 # The scene to run, in this folder (leave it out and it is <id>.plm). Rename addon.plm to something of your own (your id is a good name) and
 # put it here: two add-ons whose scene files have the same name cannot both run.
 scene = "addon.plm"

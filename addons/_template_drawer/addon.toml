@@ -38,3 +38,17 @@ height = 420
 # messages (`wph_cur` is sent again every 10 s with the same path: act only when it differs from the last one you saw); the scene needs `"pleamar"` in its `run:` permissions. Take it out for an add-on that does not touch wallpapers.
 # [wallpaper]
 # frames = true
+
+# A desktop widget: a card on the desktop that behaves like the shell's own (the clock, the system monitor). The desktop editor (a right press on the bare wallpaper) gets a
+# tile for it, after its own, with this name and picture (the add-on's icon if left out); a click on the tile shows or hides the widget. Settings > Theme > Pin widgets keeps it
+# with the theme, like the others. Take the # off to use it, and give the scene a surface of its own for it (see the scene). What the scene is told and answers:
+#   fact widget_shown   whether it is on the desktop: the tile sets it (`fact widget_shown true`) and reads it back (`get widget_shown`). Keep it (in your data folder) and say
+#                       it at start: the add-on decides, Vitreus only asks.
+#   fact widget_edit    the desktop editor is open: show the cells it takes, and let it be dragged (and resized, and set up) on the desktop itself, as the clock is.
+#   text widget_place   where it is, in your own words (cells, size, monitor...): Pin widgets reads it (`get widget_place`) and gives it back (`text widget_place ...`). Keep it
+#                       up to date whenever the widget moves, and take a value you gave as an order to go there; one you cannot use (a monitor that is not plugged in) is ignored.
+#   fact glide          (optional) a theme is putting the widgets back: move to the new place on a slower spring while it holds, instead of jumping.
+# The grid the shell's widgets snap to: 28 columns and 16 rows, from 16 px inside the room the bar takes (`room_t/r/b/l`, which every add-on is told). The editor shows its dots.
+# [widget]
+# name = "My widget"     # up to 16 characters (the add-on's name if left out)
+# icon = "icon.svg"      # its picture on the tile: an .svg or .png in this folder, one colour (the shell tints it)

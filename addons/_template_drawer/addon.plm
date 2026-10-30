@@ -172,4 +172,13 @@ scene MyDrawer {
         box { at: left + 43 + fq.width, top + 264; size: 2, 20; color: mint; opacity: shown * if(field_kb, 1, 0) }
         text hello { at: left + 24, top + 302; anchor: left center; size: 15; weight: 700; color: mint; opacity: shown; family: "Space Grotesk" }
     }
+
+    //  A desktop widget (`[widget]` in addon.toml, which has the messages): a surface of its own on the desktop, under the windows and over them while the desktop editor
+    //  is open, on each monitor. The scene declares what it is told and keeps its place itself:
+    //      fact widget_shown = false        fact widget_edit = false        text widget_place = ""        fact glide = false
+    //      fact room_t = 0 (and room_r, room_b, room_l: the grid is 28 x 16 cells from 16 px inside them, the editor's dots)
+    //      surface desk { size: full, full; anchor: top_left; margin: 0; level: bottom, top while widget_edit; screens: each max 4; reserve: -1
+    //          ...the card, while widget_shown, and while widget_edit the cells it takes and the zones that drag and resize it...
+    //      }
+    //  The Home Assistant add-on has one: a card of the entities it is given, placed and resized in the editor.
 }

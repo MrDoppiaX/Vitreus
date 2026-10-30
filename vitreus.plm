@@ -4617,6 +4617,7 @@ scene Vitreus {
     on change ax_rsz while ax_rsz { ax_free = true }
     on change ax_open while not ax_open { ax_gx = 0; ax_gy = 0; ax_hold = false; ax_free = false }
     fact ax_on = false                                     // an add-on that asked for a drawer is on
+    text aw_list = ""                                      // the add-ons with a desktop widget that are running, a line each: socket, tab, name, tab, icon (the desktop editor reads it: logic/addons.luau)
     fact ax_w = 0                                          // its size (0: about 40 % of the room wide, and all of its height; the manifest can say)
     fact ax_h = 0
     text ax_title = ""

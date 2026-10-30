@@ -27,15 +27,51 @@ local function refresh_cards()
         end)
     end
 end
+-- Add-ons with a desktop widget (`[widget]` in their addon.toml): the ones that are running, as Vitreus lists them (`aw_list`: socket, name and icon a line), a tile each.
+-- A tile flips the add-on's `widget_shown`; while the editor is open each one is told `widget_edit`. A scene that does not answer is left as it was.
+local aw = {}
+local function aw_show()
+    local rows = {}
+    for i, a in ipairs(aw) do rows[i] = { name = a.name:upper(), icon = a.icon, on = a.on == true } end
+    model.aw = rows
+end
+local function aw_refresh()
+    for _, a in ipairs(aw) do
+        run("pleamar", { "--say", a.sock, "get widget_shown" }, function(out, code)
+            if code == 0 and out and not out:find("?", 1, true) then a.on = out:match("true") ~= nil; aw_show() end
+        end)
+    end
+end
+local function aw_load(done, tries)
+    run("pleamar", { "--say", "vitreus", "get aw_list" }, function(out, code)
+        if code == 0 and out and out:find("?", 1, true) == 1 and (tries or 0) < 4 then after(700, function() aw_load(done, (tries or 0) + 1) end) return end     -- (busy: again in a moment)
+        if code ~= 0 or not out or out:find("?", 1, true) == 1 then if done then done() end return end
+        local list = {}
+        for line in (out .. "\n"):gmatch("([^\n]*)\n") do
+            local sock, name, icon = line:match("^([%w_%-]+)\t([^\t]*)\t(.*)$")
+            if sock and #list < 4 then
+                local was = nil
+                for _, a in ipairs(aw) do if a.sock == sock then was = a end end
+                list[#list + 1] = { sock = sock, name = name, icon = icon, on = was and was.on }
+            end
+        end
+        aw = list
+        aw_show()
+        aw_refresh()
+        if done then done() end
+    end)
+end
 local function edit_widgets(on)
     for _, name in ipairs(MOVABLE) do
         run("pleamar", { "--say", name, "fact edit " .. tostring(on) }, function() end)
     end
+    for _, a in ipairs(aw) do run("pleamar", { "--say", a.sock, "fact widget_edit " .. tostring(on) }, function() end) end
 end
 
 -- It fires for what the scene sets (Done, Escape) and for what is said from outside (the menu, the key): the widgets are told either way.
 on("fact:open", function(v)
     local opened = v and true or false
+    if opened then aw_load(function() edit_widgets(true) end) end         -- (the add-ons' list first, so the ones that came since are told too)
     edit_widgets(opened)
     if opened then refresh(); refresh_cards() end
     if not opened then run("pleamar", { "--say", "vitreus", "emit widgets_changed" }, function() end) end      -- (a theme that keeps its widgets takes them as they were left: Settings > Theme > Pin widgets)
@@ -67,6 +103,19 @@ on("tile_do", function(i)
     -- a card that was not running has to be started first: look again a moment later, and once more when it has settled
     after(450, refresh)
     after(1500, refresh)
+end)
+
+on("aw_do", function(k)
+    local a = aw[math.floor((tonumber(k) or 0) + 0.5) + 1]
+    if not a then return end
+    run("pleamar", { "--say", a.sock, "get widget_shown" }, function(out, code)
+        if code ~= 0 or not out or out:find("?", 1, true) then return end
+        local on = out:match("true") ~= nil
+        run("pleamar", { "--say", a.sock, "fact widget_shown " .. tostring(not on), "fact widget_edit true" }, function() end)
+        a.on = not on
+        aw_show()
+        after(400, aw_refresh)
+    end)
 end)
 
 -- Whether Vitreus has its glass off (then the shelf is flat obsidian): asked of it when this starts, and again a few seconds in.

@@ -292,6 +292,31 @@ return function()
         end
     end)
 
+    -- The add-ons with a desktop widget (`[widget]` in their addon.toml) that are on and running, by their socket: a tile each in the desktop editor (desktopedit/,
+    -- which reads `aw_list` from this scene when it opens), and Settings > Theme > Pin widgets keeps them with the other widgets (logic/theme_widgets.luau).
+    -- What such an add-on is told and answers is in the template's addon.toml (`[widget]`).
+    function addon_widgets()
+        local out = {}
+        for _, id in ipairs(order) do
+            for _, a in ipairs(list) do
+                if a.id == id and enabled[a.id] and a.widget then
+                    for _, sk in ipairs(addon_scenes) do
+                        if sk == a.sock then out[#out + 1] = { id = a.id, sock = a.sock, name = a.widget.name, icon = type(a.widget.icon) == "string" and a.widget.icon or "" } end
+                    end
+                end
+            end
+        end
+        return out
+    end
+    local function publish_widgets()
+        local lines = {}
+        for k, wd in ipairs(addon_widgets()) do
+            if k > 4 then break end         -- (as many as the editor's shelf has room for)
+            lines[#lines + 1] = wd.sock .. "\t" .. wd.name .. "\t" .. wd.icon
+        end
+        text.aw_list = table.concat(lines, "\n")
+    end
+
     local function show()
         local rows = {}
         for k, a in ipairs(list) do
@@ -319,6 +344,7 @@ return function()
         fact.ad_hidn = hidden_n
         text.ad_hid = hidden_n > 0 and (hidden_n .. (hidden_n == 1 and " add-on" or " add-ons") .. " removed from this list · press to bring back") or ""
         show_slot()
+        publish_widgets()
         text.ad_tpl = template ~= "" and "Templates: addons/_template (window), addons/_template_drawer (panel)" or ""   -- short enough for the line; the folders sit in the shell's own folder
     end
 
@@ -330,6 +356,7 @@ return function()
             local known = false
             for _, sk in ipairs(addon_scenes) do if sk == a.sock then known = true end end
             if not known then addon_scenes[#addon_scenes + 1] = a.sock end
+            publish_widgets()
             after(2500, addon_push_all)         -- once its scene is up and listening
             after(7000, addon_push_all)
         end)
@@ -337,6 +364,7 @@ return function()
     local function stop(a)
         -- The keeper first, or it starts the scene again.
         for k, sk in ipairs(addon_scenes) do if sk == a.sock then table.remove(addon_scenes, k) break end end
+        publish_widgets()
         run("pkill", { "-f", "vitreus-keep " .. a.scene }, function()
             run("pkill", { "-f", "pleamar --scene " .. a.scene .. "( |$)" }, function() end)
         end)
@@ -357,6 +385,7 @@ return function()
                 a.drawer = type(a.drawer) == "table" and a.drawer or nil
                 a.icon = type(a.icon) == "string" and a.icon or nil
                 a.wallpaper = type(a.wallpaper) == "table" and a.wallpaper or nil
+                a.widget = type(a.widget) == "table" and type(a.widget.name) == "string" and a.widget or nil
                 if hidden[a.id] and not a.mine then hidden_n = hidden_n + 1 else out[#out + 1] = a end
             end
         end

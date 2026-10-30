@@ -7135,6 +7135,7 @@ require("logic/theme_wallpaper")({
 require("logic/theme_widgets")({
     theme = function() if not vtheme.loaded then return nil end local t = vtheme.current(); return t.id, t.name end,
     start = function(dir) exec_on_desktop('vitreus-keep "$HOME/.config/pleamar/shells/vitreus/' .. dir .. '/' .. dir .. '.plm"') end,
+    addons = function() return addon_widgets and addon_widgets() or {} end,       -- the add-ons' desktop widgets (logic/addons.luau)
 })
 
 -- how big a notification is (Settings > Notifications): see logic/notif_size.luau

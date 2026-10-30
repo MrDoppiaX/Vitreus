@@ -63,6 +63,10 @@ scene DesktopEdit {
     fact on5 = false          // the reminders
     fact obs = false           // Vitreus has its glass off: the shelf is flat obsidian
     event tile_do ->           // a tile, by position
+    //  Add-ons with a desktop widget (`[widget]` in their addon.toml): a tile each after the shell's own, with the add-on's name and picture (the logic reads the list from
+    //  Vitreus when the editor opens). A click shows or hides the add-on's widget; while the editor is open the add-on is told `widget_edit`, as the shell's widgets are told `edit`.
+    model aw max 4 { name: text; icon: image 64, 64; on: bool }
+    event aw_do ->             // an add-on's tile, by position
 
     //  Opens and closes as the dashboard does (vitreus.plm, pages/dashboard.plm): no slide, nothing overshoots. The shelf is there from the start just under the water and comes up
     //  through it, ripples run round its rim as it breaks the surface, and the tiles firm up one after another; closing runs it backwards, a little faster.
@@ -118,7 +122,8 @@ scene DesktopEdit {
     let mine = if(emon < 0, screen.index == 0, screen.index == emon)
     let sw = max(screen.width, 800)
     let sh = max(screen.height, 600)
-    let shw = min(sw - 80, 1220)
+    let awn = clamp(min(aw.count, floor((sw - 80 - 1220) / 114)), 0, 4)       // the add-ons' tiles that fit (the shelf grows by a tile for each)
+    let shw = min(sw - 80, 1220 + 114 * awn)
     let shh = 150
     let sx0 = clamp((sw - shw) / 2 + shx, 8, max(8, sw - shw - 8))      // dragged by its bare parts (`shx`, `shy`), and kept on the screen
     let sy0 = clamp(sh - shh - 48 + shy, 8, max(8, sh - shh - 8))
@@ -159,6 +164,12 @@ scene DesktopEdit {
         on press tz.$i { emit tile_do(i) }
         on hover tz.$i for 1ms { hov = i }
         on leave tz.$i { hov = -1 }
+    }
+    repeat k in 0..4 {
+        zone box atz.$k { at: tx0 + (7 + k) * tp + tw / 2, sy0 + 26 + 52; size: tw, 104; corner: 16; cursor: pointer; active: open and eo > 0.6 and mine and k < awn; label: "{aw.$k.name}" }
+        on press atz.$k { emit aw_do(k) }
+        on hover atz.$k for 1ms { hov = 8 + k }
+        on leave atz.$k { hov = -1 }
     }
     zone box donez { at: sx0 + shw - 82, sy0 + shh / 2; size: 124, 44; corner: 22; cursor: pointer; active: open and eo > 0.6 and mine; label: "Done" }
     on press donez { open = false }
@@ -287,6 +298,28 @@ scene DesktopEdit {
             ellipse { at: cx + tw / 2 - 6, cy - 46; radius: 11; stroke: 1.5; color: mint }
             text "✓" { at: cx + tw / 2 - 6, cy - 46; anchor: center center; size: 13; weight: 700; color: onmint; opacity: bon; family: "Space Grotesk" }
             text "+" { at: cx + tw / 2 - 6, cy - 46; anchor: center center; size: 15; weight: 700; color: mint; opacity: 1 - bon; family: "Space Grotesk" }
+            }
+        }
+
+        //  the add-ons' tiles: their own picture (tinted like the shell's pictures) and name, and the same badge
+        repeat k in 0..4 {
+            let cx = tx0 + (7 + k) * tp + tw / 2
+            let cy = sy0 + 26 + 52
+            let hv = if(hov == 8 + k, 1, 0)
+            let on = if(aw.$k.on, 1, 0)
+            group {
+                show: k < awn
+                pivot: cx, cy
+                scale: 0.9 + 0.1 * ec.6
+                opacity: ec.6
+                box { at: cx, cy; size: tw, 104; corner: 16; color: deep; opacity: 55% + 10% * hv }
+                box { at: cx, cy; size: tw, 104; corner: 16; stroke: 1.6; color: mint; opacity: 12% + 18% * hv + 70% * on }
+                image aw.$k.icon { at: cx - 22, cy - 30; size: 44, 44; tint: mix(faint, mint, on) }
+                text aw.$k.name { at: cx, cy + 38; anchor: center center; size: 10; weight: 700; width: tw - 12; lines: 1; color: mix(ink, mint, on); family: "Space Grotesk" }
+                ellipse { at: cx + tw / 2 - 6, cy - 46; radius: 11; color: mix(deep, mint, 0.2 + 0.8 * on); }
+                ellipse { at: cx + tw / 2 - 6, cy - 46; radius: 11; stroke: 1.5; color: mint }
+                text "✓" { at: cx + tw / 2 - 6, cy - 46; anchor: center center; size: 13; weight: 700; color: onmint; opacity: on; family: "Space Grotesk" }
+                text "+" { at: cx + tw / 2 - 6, cy - 46; anchor: center center; size: 15; weight: 700; color: mint; opacity: 1 - on; family: "Space Grotesk" }
             }
         }
 
