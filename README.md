@@ -24,7 +24,7 @@
     </tr>
   <tr>
     <td align="center"><img src="assets/screenshots/lockscreen.webp" alt="The lock screen: the desktop blurs away, a glass clock and password field appear, and a wrong password flashes red" height="280" /><br /><sub>The lock screen</sub></td>
-    <td align="center"><video src="assets/screenshots/themes-tour.webm" height="280" autoplay loop muted playsinline></video><br /><sub>Every theme: a notification, Controls, the Desk, Settings and Search</sub></td>
+    <td align="center"><img src="assets/screenshots/themes-tour.webp" alt="Every theme in turn: a notification with its name, then Controls, the Desk, Settings and Search" height="280" /><br /><sub>Every theme: a notification, Controls, the Desk, Settings and Search</sub></td>
   </tr>
   </table>
 
