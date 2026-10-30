@@ -6,7 +6,7 @@ local CARD_FACT = { [4] = "cal_shown", [5] = "rem_shown" }
 local SCENES = { "desktopclock", "desktopsysmon", "vitreus", "webcam" }
 local SHOWN = { "shown", "shown", "fw_on", "shown" }      -- the fact that says whether each is on the desktop (the audio visualiser is Vitreus's own: the bottom edge)
 -- The scenes whose cards can be dragged in place (`fact edit`): they show the cells they take while the editor is open.
-local MOVABLE = { "desktopclock", "desktopsysmon", "desktopcards" }
+local MOVABLE = { "desktopclock", "desktopsysmon", "desktopcards", "desktopnotes" }
 
 local function refresh()
     for i, name in ipairs(SCENES) do

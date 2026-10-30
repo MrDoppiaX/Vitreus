@@ -15,13 +15,14 @@ import "../palette.plm"
 //  Its settings are kept in desktopnotes.json and the stickers in desktopnotes-stickers.json, in ~/.local/share/pleamar/desktopnotes (see desktopnotes.luau).
 
 scene DesktopNotes {
-    surface { size: full, full; anchor: top_left; margin: 0; level: bottom, top while pwm or eix >= 0; screens: each; reserve: -1; keyboard: exclusive while eix >= 0 }
+    surface { size: full, full; anchor: top_left; margin: 0; level: bottom, top while edit or eix >= 0; screens: each; reserve: -1; keyboard: exclusive while eix >= 0 }
 
     permissions { services: "files", "files.write"; run: "pleamar", "hyprctl", "socat", "printenv" }
 
     fact shown = false     // the logic sets it from desktopnotes.json (so that `sh` follows it from nothing)
     fact cli = 1           // the glass: 0 clear, 1 soft, 2 full
     fact pwm = false       // the session is pleamar-wm (asked of Vitreus: `wm_pwm`): there the surface has to be on top to hear the mouse
+    fact edit = false      // the desktop editor is open (desktopedit says so): the stickers come above the windows to be moved, written on or taken away; otherwise they stay under them
     fact obs = false       // Vitreus has its glass off (Vitreus says so with `fact obs true`): the stickers are flat obsidian
     fact nmon = 0          // a new sticker is asked for: on which monitor, and where in it (-1 for the middle)
     fact nx = -1
