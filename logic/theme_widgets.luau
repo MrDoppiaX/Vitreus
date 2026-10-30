@@ -117,7 +117,7 @@ return function(w)
                             i = i + 1
                             local k = wd.facts[i]
                             if not k then break end
-                            local v = value(line)
+                            local v = TEXTS[k] and line:match("^%s*(.-)%s*$") or value(line)      -- (a text stays one, even when it looks like a number)
                             if v ~= "" then s[k] = v end
                         end
                     elseif prev and type(prev[wd.scene]) == "table" then

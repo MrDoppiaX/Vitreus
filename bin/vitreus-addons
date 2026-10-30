@@ -64,7 +64,7 @@ def read(folder, name):
         wallpaper = {"frames": wallpaper.get("frames", False)}
     widget = t.get("widget")
     if widget is not None:
-        # A desktop widget: a tile of its own in the desktop editor (its name and picture), which shows or hides it. See the template's addon.toml.
+        # A desktop widget: a tile of its own in the desktop editor (its name and picture), which shows or hides it, or opens the add-on's menu (`menu`). See the template's addon.toml.
         if not isinstance(widget, dict):
             raise ValueError("%s: [widget] has to be a table" % name)
         wicon = widget.get("icon")

@@ -27,8 +27,9 @@ local function refresh_cards()
         end)
     end
 end
--- Add-ons with a desktop widget (`[widget]` in their addon.toml): the ones that are running, as Vitreus lists them (`aw_list`: socket, name and icon a line), a tile each.
--- A tile flips the add-on's `widget_shown`; while the editor is open each one is told `widget_edit`. A scene that does not answer is left as it was.
+-- Add-ons with a desktop widget (`[widget]` in their addon.toml): the ones that are running, as Vitreus lists them (`aw_list`: a line each, the socket, "menu" or
+-- nothing, the name and the icon, between tabs), a tile each. A tile flips the add-on's `widget_shown`, or opens the add-on's own menu (`menu = true`); while the
+-- editor is open each one is told `widget_edit`. A scene that does not answer is left as it was.
 local aw = {}
 local function aw_show()
     local rows = {}
@@ -65,14 +66,16 @@ local function edit_widgets(on)
     for _, name in ipairs(MOVABLE) do
         run("pleamar", { "--say", name, "fact edit " .. tostring(on) }, function() end)
     end
+end
+local function edit_addons(on)
     for _, a in ipairs(aw) do run("pleamar", { "--say", a.sock, "fact widget_edit " .. tostring(on) }, function() end) end
 end
 
 -- It fires for what the scene sets (Done, Escape) and for what is said from outside (the menu, the key): the widgets are told either way.
 on("fact:open", function(v)
     local opened = v and true or false
-    if opened then aw_load(function() edit_widgets(true) end) end         -- (the add-ons' list first, so the ones that came since are told too)
     edit_widgets(opened)
+    if opened then aw_load(function() edit_addons(true) end) else edit_addons(false) end        -- (the add-ons' list first, so the ones that came since are told too)
     if opened then refresh(); refresh_cards() end
     if not opened then run("pleamar", { "--say", "vitreus", "emit widgets_changed" }, function() end) end      -- (a theme that keeps its widgets takes them as they were left: Settings > Theme > Pin widgets)
 end)
@@ -115,7 +118,6 @@ on("aw_do", function(v)
         local cmds = { "--say", a.sock, "fact widget_mx " .. math.floor(tonumber(fact.awx) or 0), "fact widget_my " .. math.floor(tonumber(fact.awy) or 0), "fact widget_edit true", "emit widget_menu" }
         if mon ~= "" then table.insert(cmds, 3, "text widget_mon_name " .. mon) end        -- (before the menu: it opens on that monitor)
         run("pleamar", cmds, function() end)
-        after(1500, aw_refresh)
         return
     end
     run("pleamar", { "--say", a.sock, "get widget_shown" }, function(out, code)
@@ -132,7 +134,7 @@ end)
 -- (A list that could not be read when it opened, Vitreus being busy, is asked for again.)
 every(2000, function()
     if fact.open ~= true then return end
-    if #aw == 0 then aw_load(function() if #aw > 0 then edit_widgets(true) end end) else aw_refresh() end
+    if #aw == 0 then aw_load(function() edit_addons(true) end) else aw_refresh() end
 end)
 
 -- Whether Vitreus has its glass off (then the shelf is flat obsidian): asked of it when this starts, and again a few seconds in.

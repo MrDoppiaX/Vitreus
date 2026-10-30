@@ -314,7 +314,8 @@ return function()
             if k > 4 then break end         -- (as many as the editor's shelf has room for)
             lines[#lines + 1] = wd.sock .. "\t" .. (wd.menu and "menu" or "") .. "\t" .. wd.name .. "\t" .. wd.icon
         end
-        text.aw_list = table.concat(lines, "\n")
+        local s = table.concat(lines, "\n")
+        if s ~= text.aw_list then text.aw_list = s end
     end
 
     local function show()
