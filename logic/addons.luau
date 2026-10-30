@@ -295,7 +295,7 @@ return function()
     -- The add-ons with a desktop widget (`[widget]` in their addon.toml) that are on and running, by their socket: a tile each in the desktop editor (desktopedit/,
     -- which reads `aw_list` from this scene when it opens), and Settings > Theme > Pin widgets keeps them with the other widgets (logic/theme_widgets.luau).
     -- What such an add-on is told and answers is in the template's addon.toml (`[widget]`).
-    function addon_widgets()
+    local function addon_widgets()
         local out = {}
         for _, id in ipairs(order) do
             for _, a in ipairs(list) do
@@ -308,11 +308,20 @@ return function()
         end
         return out
     end
+    local widgets_said = nil
     local function publish_widgets()
         local lines = {}
-        for k, wd in ipairs(addon_widgets()) do
-            if k > 4 then break end         -- (as many as the editor's shelf has room for)
-            lines[#lines + 1] = wd.sock .. "\t" .. (wd.menu and "menu" or "") .. "\t" .. wd.name .. "\t" .. wd.icon
+        local all = addon_widgets()
+        for k, wd in ipairs(all) do
+            if k > 4 then                   -- (as many as the editor's shelf has room for: the rest get no tile, and the log says which)
+                local left = {}
+                for j = 5, #all do left[#left + 1] = all[j].id end
+                local msg = "add-on widgets: only four get a tile in the desktop editor; left out: " .. table.concat(left, ", ")
+                if msg ~= widgets_said then widgets_said = msg; log(msg) end     -- (once, not each time the list is published)
+                break
+            end
+            -- (a tab or a line break in a name or a path would shift the columns or the lines: they go)
+            lines[#lines + 1] = wd.sock .. "\t" .. (wd.menu and "menu" or "") .. "\t" .. (wd.name:gsub("[\t\r\n]", " ")) .. "\t" .. (wd.icon:gsub("[\t\r\n]", ""))
         end
         local s = table.concat(lines, "\n")
         if s ~= text.aw_list then text.aw_list = s end
@@ -487,4 +496,6 @@ return function()
     pcall(load_list)       -- the list the last run left (addons.json): the pill's icons are there at once; the scan below, once the shell is up, brings it up to date
     show()
     after(5000, function() refresh(true) end)       -- with the desktop's own scenes, once the shell is up
+    -- What vitreus.luau hands on: the add-ons' desktop widgets, for Settings > Theme > Pin widgets (logic/theme_widgets.luau).
+    return { widgets = addon_widgets }
 end

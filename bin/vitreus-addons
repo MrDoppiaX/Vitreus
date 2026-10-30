@@ -75,7 +75,8 @@ def read(folder, name):
             wicon = wp
         if not isinstance(widget.get("menu", False), bool):
             raise ValueError("%s: [widget] menu has to be true or false" % name)
-        widget = {"name": str(widget.get("name", t.get("name", name)))[:16], "icon": wicon or icon, "menu": widget.get("menu", False)}
+        wname = re.sub(r"[\t\r\n]", " ", str(widget.get("name", t.get("name", name))))[:16]       # (the shell lists it a line each, between tabs)
+        widget = {"name": wname, "icon": wicon or icon, "menu": widget.get("menu", False)}
     return {"id": name, "icon": icon, "drawer": drawer, "wallpaper": wallpaper, "widget": widget, "sock": os.path.splitext(os.path.basename(path))[0], "name": str(t.get("name", name))[:28], "author": str(t.get("author", ""))[:40],
             "version": str(t.get("version", ""))[:12], "repo": repo_url(t.get("repo") or (remote.get(name) if os.path.realpath(os.path.dirname(folder)) == bundled else "")), "description": str(t.get("description", ""))[:80], "scene": path}
 

@@ -69,6 +69,11 @@ scene DesktopEdit {
     event aw_do ->             // an add-on's tile, by position
     fact awx = 0               // where it was pressed: the middle of that tile and the top of the shelf, in pixels of this copy (an add-on's menu opens over it)
     fact awy = 0
+    //  An add-on whose widgets come and go on its own (from its menu) says so, so its tile is ticked or not without being asked:
+    //  pleamar --say desktopedit "text aw_said <its scene>" "fact aw_said_on true|false" "emit aw_say"
+    text aw_said = ""
+    fact aw_said_on = false
+    event aw_say ->
 
     //  Opens and closes as the dashboard does (vitreus.plm, pages/dashboard.plm): no slide, nothing overshoots. The shelf is there from the start just under the water and comes up
     //  through it, ripples run round its rim as it breaks the surface, and the tiles firm up one after another; closing runs it backwards, a little faster.
@@ -124,13 +129,16 @@ scene DesktopEdit {
     let mine = if(emon < 0, screen.index == 0, screen.index == emon)
     let sw = max(screen.width, 800)
     let sh = max(screen.height, 600)
-    let awn = clamp(min(aw.count, floor((sw - 80 - 1220) / 114)), 0, 4)       // the add-ons' tiles that fit (the shelf grows by a tile for each)
+    //  The add-ons' tiles (up to four): the shelf grows by a tile for each, up to the screen's width less 80 px. Past that the tiles get narrower, down to 74 px
+    //  (84 a tile); an add-on that would need them narrower still has no tile, and a line over Done says how many (Vitreus's log names add-ons past the fourth).
+    //  The shelf is 422 px of its own (the hints, the gaps and Done) and a pitch for each tile: 1220 with the shell's seven at 114.
+    let awn = clamp(min(aw.count, floor((sw - 80 - 422) / 84) - 7), 0, 4)
     let shw = min(sw - 80, 1220 + 114 * awn)
     let shh = 150
     let sx0 = clamp((sw - shw) / 2 + shx, 8, max(8, sw - shw - 8))      // dragged by its bare parts (`shx`, `shy`), and kept on the screen
     let sy0 = clamp(sh - shh - 48 + shy, 8, max(8, sh - shh - 8))
-    let tw = 104
-    let tp = 114
+    let tp = min(114, (shw - 422) / (7 + awn))       // a tile's pitch: 114, less on a narrow monitor
+    let tw = tp - 10
     let tx0 = sx0 + 262
     let ed.still = ed_under < 0.002 and (ed_rh < 0.01 or ed_rq >= 0.999)
     let ed.wr = pal_deep_r * 0.7 + pal_mint_r * 0.3
@@ -222,6 +230,7 @@ scene DesktopEdit {
             text pick(r, "Add it or take it off", "Move a widget", "Done") { at: sx0 + 60, ry; anchor: left center; size: 11; weight: 600; color: ink; opacity: 88%; family: "Space Grotesk" }
         }
         box { at: sx0 + 238, sy0 + shh / 2; size: 1.5, shh - 44; color: ink; opacity: 14% }
+        text if(aw.count - awn == 1, "1 add-on has no room here", "{aw.count - awn} add-ons have no room here") { at: sx0 + shw - 82, sy0 + 24; anchor: center center; size: 9.5; weight: 600; color: faint; show: aw.count > awn; family: "Space Grotesk" }
 
         //  the tiles
         repeat i in 0..7 {

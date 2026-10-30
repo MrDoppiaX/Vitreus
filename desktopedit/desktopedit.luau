@@ -45,7 +45,7 @@ local function aw_refresh()
 end
 local function aw_load(done, tries)
     run("pleamar", { "--say", "vitreus", "get aw_list" }, function(out, code)
-        if code == 0 and out and out:find("?", 1, true) == 1 and (tries or 0) < 4 then after(700, function() aw_load(done, (tries or 0) + 1) end) return end     -- (busy: again in a moment)
+        if code == 0 and out and out:find("?", 1, true) == 1 and (tries or 0) < 8 then after(700, function() aw_load(done, (tries or 0) + 1) end) return end     -- (busy: again in a moment)
         if code ~= 0 or not out or out:find("?", 1, true) == 1 then if done then done() end return end
         local list = {}
         for line in (out .. "\n"):gmatch("([^\n]*)\n") do
@@ -130,11 +130,12 @@ on("aw_do", function(v)
     end)
 end)
 
--- While the editor is open, the add-ons' tiles are ticked as their widgets come and go (one with a menu adds and removes them itself).
--- (A list that could not be read when it opened, Vitreus being busy, is asked for again.)
-every(2000, function()
-    if fact.open ~= true then return end
-    if #aw == 0 then aw_load(function() edit_addons(true) end) else aw_refresh() end
+-- An add-on whose widgets come and go on its own (from its menu) says so (`aw_say`), so its tile is ticked or not without the editor asking it.
+on("aw_say", function()
+    local sock = text.aw_said or ""
+    for _, a in ipairs(aw) do
+        if a.sock == sock then a.on = fact.aw_said_on == true; aw_show() end
+    end
 end)
 
 -- Whether Vitreus has its glass off (then the shelf is flat obsidian): asked of it when this starts, and again a few seconds in.

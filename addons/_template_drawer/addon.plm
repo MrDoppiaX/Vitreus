@@ -180,5 +180,5 @@ scene MyDrawer {
     //      surface desk { size: full, full; anchor: top_left; margin: 0; level: bottom, top while widget_edit; screens: each max 4; reserve: -1
     //          ...the card, while widget_shown, and while widget_edit the cells it takes and the zones that drag and resize it...
     //      }
-    //  The Home Assistant add-on has one: a card of the entities it is given, placed and resized in the editor.
+    //  The Home Assistant add-on (addons/homeassistant, widget.luau and the end of homeassistant.plm) has them: a card for each entity chosen from its menu.
 }
