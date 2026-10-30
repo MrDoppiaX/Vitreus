@@ -105,8 +105,17 @@ return function(api)
         for _, c in ipairs(cards) do lines[#lines + 1] = table.concat({ c.entity, c.mon, c.gx, c.gy, c.gw, c.gh }, ",") end
         return table.concat(lines, ";")
     end
+    -- Vitreus's desktop editor ticks this add-on's tile while there are cards: it is told when that changes (it does not keep asking)
+    local said = nil
+    local function tell_editor()
+        local on = #cards > 0
+        if on == said then return end
+        said = on
+        run("pleamar", { "--say", "desktopedit", "text aw_said homeassistant", "fact aw_said_on " .. tostring(on), "emit aw_say" }, function() end)
+    end
     local function changed()
         save()
+        tell_editor()
         fact.widget_shown = #cards > 0
         text.widget_place = place()
         fill()
@@ -177,7 +186,7 @@ return function(api)
         local j = (tonumber(k) or -1) + 1
         if cards[j] then table.remove(cards, j); changed() end
     end)
-    -- let go of: the card's own place becomes the new one, and only then the scene lets go of it (so it never springs back on the way)
+    -- let go of: the card's own place becomes the new one (the scene lets go of it once it sees that, so it never springs back on the way)
     on("dw_move", function(v)
         v = math.floor(tonumber(v) or 0)
         local c = cards[v // 10000 + 1]
@@ -186,7 +195,6 @@ return function(api)
             c.gy = clampi(v % 100, 0, GY - c.gh)
             changed()
         end
-        fact.dw_di = -1
     end)
     on("dw_size", function(v)
         v = math.floor(tonumber(v) or 0)
@@ -196,7 +204,6 @@ return function(api)
             c.gh = clampi(v % 100, 2, GY - c.gy)
             changed()
         end
-        fact.dw_ri = -1
     end)
     on("dw_tap", function(k)
         local i = by_card[(tonumber(k) or -1) + 1]
