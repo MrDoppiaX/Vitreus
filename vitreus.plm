@@ -416,7 +416,7 @@ scene Vitreus {
     //  Glass switched off (`glass_obs`): the same bar and drawers, but a flat, solid obsidian instead of glass. `obs` is 0 glass, 1 obsidian, and travels between them.
     fact glass_obs = false
     prop obs = 0 ~calm
-    follow obs = if(glass_obs or cas or uwu or milk or proxy_on or game_on, 1, 0)      // (Game Mode: no glass while it is on, see game_fx.glass)
+    follow obs = if(glass_obs or cas or uwu or milk or proxy_on or paper_on or game_on, 1, 0)      // (Game Mode: no glass while it is on, see game_fx.glass)
     //  The Cassette theme (Settings > Theme): the same flat body as obsidian, but in the palette's own plastic (`obsidian` below stops being darkened), with a hard
     //  edge, a lit lip, a seam, a four-colour stripe across each drawer's head and a hard shadow. `cas_k` travels between glass and plastic; the drawers' liquid
     //  (necks, drips, the jelly) is switched off with it and their corners are cut square (`rc`, `bk`).
@@ -433,7 +433,11 @@ scene Vitreus {
     fact milk = false
     prop milk_k = 0 ~calm
     follow milk_k = if(milk, 1, 0)
-    let pk = max(max(max(cas_k, uwu_k), milk_k), px_k)
+    //  The Paper theme: a scrapbook. Every drawer is a worn sheet of cream paper, taped down, with a soft brown shadow (see bar_glass.plm). Opaque like the plastics, liquid off. `pp_k` travels between glass and Paper.
+    fact paper_on = false
+    prop pp_k = 0 ~calm
+    follow pp_k = if(paper_on, 1, 0)
+    let pk = max(max(max(max(cas_k, uwu_k), milk_k), px_k), pp_k)
     //  The Cyber theme: a neon HUD. The glass stays glass (the palette makes it near-black); on top of it each drawer gets a hairline neon outline, corner brackets and
     //  scan ticks (see bar_glass.plm). `cy_k` travels between glass and Cyber. `deep` is its second neon.
     fact cyber_on = false
@@ -445,7 +449,7 @@ scene Vitreus {
     prop px_k = 0 ~calm
     follow px_k = if(proxy_on, 1, 0)
     //  How square the corners are: Retro's plastic and Cyber's HUD both take the drawers' rounding down by the same 73 % (`corner: R * (1 - 0.73 * sq)`).
-    let sq = max(max(cas_k, cy_k), px_k)
+    let sq = max(max(max(cas_k, cy_k), px_k), 0.6 * pp_k)
     event glass_obs_toggle ->
     let obsidian = mix(tint, #000000, 0.7 * (1 - pk))      // the theme's own tint, taken most of the way to black (the plastic's own colour on the Cassette): static themes and Iris both change it
     fact hy_blur = 3
@@ -1014,6 +1018,7 @@ scene Vitreus {
     shader wave = file "wave.wgsl"
     shader pixelate = file "pixelate.wgsl"
     shader matrix = file "matrix.wgsl"                  // the Cyber theme's digital rain
+    shader paper = file "paper.wgsl"                    // the Paper theme's worn sheet: rubbed edges, fibres, specks
     //  The frosting behind the glass, as wide as the Glass page's blur slider says (`hy_blur`, 0 to 20; 0 is off): see blur.wgsl.
     blur = file "blur.wgsl" {
         passes: wide 0.5, tall 1
@@ -6673,6 +6678,54 @@ scene Vitreus {
         ellipse { at: gdo.l + 12, gdo.b - 12; radius: 3.6; color: mix(deep, #ffffff, 38%) }
         ellipse { at: gdo.l + 12, gdo.b - 12; radius: 3.6; stroke: 1.1; color: deep }
         line { from: gdo.l + 10, gdo.b - 10; to: gdo.l + 14, gdo.b - 14; width: 1.3; color: deep }
+    }
+    //  The Paper's torn edge on the add-on panel and the volume / notification banner: it follows the drawer's own size from the first moment (see bar_glass.plm).
+    group {
+        show: pp_k > 0.01 and dax0 > 0.004
+        opacity: pp_k
+        let pedaxw = dax.ew * (1 + dj.stretch - 0.07 * dax.bell + 0.003 * wobble) + dax.bl + dax.br
+        let pedaxh = dax.eh * (1 - dj.stretch * 0.5 - 0.002 * wobble) + dax.bt + dax.bb
+        let pedaxl = dax.ex + (dax.br - dax.bl) / 2 - pedaxw / 2
+        let pedaxt = dax.ey + (dax.bb - dax.bt) / 2 - pedaxh / 2
+        shader paper { at: pedaxl - 8, pedaxt - 8; size: pedaxw + 16, pedaxh + 16; values: 1, 9.1, 8, mix(min(dax.ew, dax.eh) / 2, rc, clamp(dax0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+    }
+    group {
+        show: pp_k > 0.01 and do0 > 0.004
+        opacity: pp_k
+        let pedow = do.ew * (1 + do.stretch - 0.07 * do.bell + 0.003 * wobble)
+        let pedoh = do.eh * (1 - do.stretch * 0.5 - 0.002 * wobble)
+        let pedol = do.ex - pedow / 2
+        let pedot = do.ey - pedoh / 2
+        shader paper { at: pedol - 8, pedot - 8; size: pedow + 16, pedoh + 16; values: 1, 12.3, 8, mix(min(do.ew, do.eh) / 2, rc, clamp(do0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+    }
+    //  The Paper's worn sheet and tape on the add-on panel and the volume / notification banner, as on the other drawers (see bar_glass.plm).
+    group {
+        show: pp_k > 0.01 and dax0 > 0.9
+        opacity: pp_k * clamp(dax0 * 3 - 2, 0, 1)
+        let ppdaxl = pxk_xdrawer_cx - pxk_xdrawer_w / 2
+        let ppdaxr = pxk_xdrawer_cx + pxk_xdrawer_w / 2
+        let ppdaxt = pxk_xdrawer_cy - pxk_xdrawer_h / 2
+        let ppdaxb = min(pxk_xdrawer_cy + pxk_xdrawer_h / 2, vb - lf.t - 1)
+        box { at: ppdaxl + 46 * u, ppdaxt + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+        box { at: ppdaxl + 46 * u, ppdaxt + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+        line { from: ppdaxl + 46 * u - 24 * u, ppdaxt + 3 - 4; to: ppdaxl + 46 * u + 24 * u, ppdaxt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+        box { at: ppdaxr - 46 * u, ppdaxt + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+        box { at: ppdaxr - 46 * u, ppdaxt + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+        line { from: ppdaxr - 46 * u - 24 * u, ppdaxt + 3 - 4; to: ppdaxr - 46 * u + 24 * u, ppdaxt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+    }
+    group {
+        show: pp_k > 0.01 and do0 > 0.9
+        opacity: pp_k * clamp(do0 * 3 - 2, 0, 1)
+        let ppdol = do.ix - do.iw / 2
+        let ppdor = do.ix + do.iw / 2
+        let ppdot = do.ey - do.eh / 2
+        let ppdob = min(do.ey + do.eh / 2, vb - lf.t - 1)
+        box { at: ppdol + 46 * u, ppdot + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+        box { at: ppdol + 46 * u, ppdot + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+        line { from: ppdol + 46 * u - 24 * u, ppdot + 3 - 4; to: ppdol + 46 * u + 24 * u, ppdot + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+        box { at: ppdor - 46 * u, ppdot + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+        box { at: ppdor - 46 * u, ppdot + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+        line { from: ppdor - 46 * u - 24 * u, ppdot + 3 - 4; to: ppdor - 46 * u + 24 * u, ppdot + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
     }
     //  The Proxy's hazard tape on the add-on panel, as on the other drawers (see bar_glass.plm).
     group {

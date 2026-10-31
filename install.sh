@@ -56,6 +56,10 @@ kurenaido_licence_url="https://github.com/google/fonts/raw/main/ofl/zenkurenaido
 # The Proxy theme's typeface, Titan One (a chunky rounded display face; Google Fonts, OFL).
 titan_url="https://github.com/google/fonts/raw/main/ofl/titanone/TitanOne-Regular.ttf"
 titan_licence_url="https://github.com/google/fonts/raw/main/ofl/titanone/OFL.txt"
+# The Paper theme's typeface, Fuzzy Bubbles (a bubbly marker handwriting; Google Fonts, OFL).
+fuzzy_url="https://github.com/google/fonts/raw/main/ofl/fuzzybubbles/FuzzyBubbles-Regular.ttf"
+fuzzy_bold_url="https://github.com/google/fonts/raw/main/ofl/fuzzybubbles/FuzzyBubbles-Bold.ttf"
+fuzzy_licence_url="https://github.com/google/fonts/raw/main/ofl/fuzzybubbles/OFL.txt"
 
 conf="${XDG_CONFIG_HOME:-$HOME/.config}"
 data="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -67,6 +71,7 @@ fonts_mochiy="$data/fonts/MochiyPopOne"
 fonts_orbitron="$data/fonts/Orbitron"
 fonts_kurenaido="$data/fonts/ZenKurenaido"
 fonts_titan="$data/fonts/TitanOne"
+fonts_fuzzy="$data/fonts/FuzzyBubbles"
 
 # Official-repo packages, then AUR ones: what each is for is in the README.
 pacman_pkgs="gcc pkgconf wayland wayland-protocols git curl jq python fontconfig socat glib2 file imagemagick cava playerctl networkmanager bluez bluez-utils brightnessctl hypridle hyprsunset libnotify xdg-user-dirs xdg-utils wl-clipboard cliphist awww ffmpeg grim slurp wf-recorder power-profiles-daemon polkit python-gobject python-pyte ttf-space-mono-nerd pipewire-audio sound-theme-freedesktop tesseract tesseract-data-eng"
@@ -403,7 +408,7 @@ if $deps; then
     xdg-user-dirs   finding your Pictures folder, and the places in Files' sidebar
     git, fontconfig
     python          the font setup of the Retro and UwU themes and the font picker (bin/vitreus-fonts)
-    Audiowide, Mochiy Pop One, Orbitron, Zen Kurenaido, Titan One  the typefaces of the Retro, UwU, Cyber, Milkbox and Proxy themes (Space Grotesk's neighbours, installed into ~/.local/share/fonts)
+    Audiowide, Mochiy Pop One, Orbitron, Zen Kurenaido, Titan One, Fuzzy Bubbles  the typefaces of the Retro, UwU, Cyber, Milkbox, Proxy and Paper themes (Space Grotesk's neighbours, installed into ~/.local/share/fonts)
 LIST
     fi
     # On Hyprland hyprsunset is not optional: Night mode is driven by it. Without it the shell would have to fall back to a Hyprland
@@ -614,6 +619,19 @@ LIST
             curl -fsSL -m 120 "$titan_url" -o "$fonts_titan/TitanOne-Regular.ttf" || warn "could not download Titan One: the Proxy theme will use Space Grotesk until you install it"
             curl -fsSL -m 120 "$titan_licence_url" -o "$fonts_titan/OFL.txt" 2> /dev/null || true
             have fc-cache && fc-cache -f "$fonts_titan" > /dev/null 2>&1 || true
+        fi
+    fi
+    if have fc-list && fc-list 2> /dev/null | grep -qi 'fuzzy bubbles'; then
+        say "the Fuzzy Bubbles font is installed"
+    elif ask_font "install the Fuzzy Bubbles font, for the Paper theme (into $fonts_fuzzy)?"; then
+        if $dry; then
+            echo "    would download $fuzzy_url"
+        else
+            mkdir -p "$fonts_fuzzy"
+            curl -fsSL -m 120 "$fuzzy_url" -o "$fonts_fuzzy/FuzzyBubbles-Regular.ttf" || warn "could not download Fuzzy Bubbles: the Paper theme will use Space Grotesk until you install it"
+            curl -fsSL -m 120 "$fuzzy_bold_url" -o "$fonts_fuzzy/FuzzyBubbles-Bold.ttf" 2> /dev/null || true
+            curl -fsSL -m 120 "$fuzzy_licence_url" -o "$fonts_fuzzy/OFL.txt" 2> /dev/null || true
+            have fc-cache && fc-cache -f "$fonts_fuzzy" > /dev/null 2>&1 || true
         fi
     fi
     fi

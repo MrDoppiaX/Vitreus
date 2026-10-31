@@ -422,6 +422,186 @@ part BarGlass {
             include "bar_shapes.plm"
             include "bar_waves.plm"
         }
+        //  The Paper's body: a sheet of cream paper with a worn, brownish edge and a soft shadow underneath, as if laid on the desk. Solid, so the glass is off (`obs`), as with the plastics.
+        body {
+            color: obsidian
+            rim: 0%
+            border: 1.2 * u * pp_k, mix(deep, obsidian, 0.55)
+            shadow: 1.5 * u * pp_k, 3.5 * u * pp_k, 9 * u * pp_k, 42% * pp_k, deep
+            opacity: pp_k
+            show: (pp_k > 0.004) and fw_act < 0.5
+            include "bar_shapes.plm"
+        }
+        body {
+            color: obsidian
+            rim: 0%
+            border: 1.2 * u * pp_k, mix(deep, obsidian, 0.55)
+            shadow: 1.5 * u * pp_k, 3.5 * u * pp_k, 9 * u * pp_k, 42% * pp_k, deep
+            opacity: pp_k
+            show: (pp_k > 0.004) and fw_act > 0.5 and fw_act < 1.5
+            include "bar_shapes.plm"
+            include "bar_waves_12.plm"
+        }
+        body {
+            color: obsidian
+            rim: 0%
+            border: 1.2 * u * pp_k, mix(deep, obsidian, 0.55)
+            shadow: 1.5 * u * pp_k, 3.5 * u * pp_k, 9 * u * pp_k, 42% * pp_k, deep
+            opacity: pp_k
+            show: (pp_k > 0.004) and fw_act > 1.5 and fw_act < 2.5
+            include "bar_shapes.plm"
+            include "bar_waves_24.plm"
+        }
+        body {
+            color: obsidian
+            rim: 0%
+            border: 1.2 * u * pp_k, mix(deep, obsidian, 0.55)
+            shadow: 1.5 * u * pp_k, 3.5 * u * pp_k, 9 * u * pp_k, 42% * pp_k, deep
+            opacity: pp_k
+            show: (pp_k > 0.004) and fw_act > 2.5 and fw_act < 3.5
+            include "bar_shapes.plm"
+            include "bar_waves.plm"
+        }
+        //  The Paper's torn edge, worn rim and grain on every drawer, from the first moment it opens: its box follows the drawer's own size and wobble (the same sums as its body in bar_shapes.plm), and its noise is tied to the panel's sides, so the edge opens, closes and jiggles with the panel.
+        group {
+            show: pp_k > 0.01 and dk0 > 0.004
+            opacity: pp_k
+            let pedkw = dk.ew * (1 + dj.stretch - 0.07 * dk.bell + 0.003 * wobble * (1 - sg)) * dk.tail
+            let pedkh = (dk.eh * (1 - dj.stretch * 0.5 - 0.002 * wobble * (1 - sg)) + sg.up) * dk.tail
+            let pedkl = dk.ex - pedkw / 2
+            let pedkt = dk.ey - sg.up / 2 - pedkh / 2
+            shader paper { at: pedkl - 8, pedkt - 8; size: pedkw + 16, pedkh + 16; values: 1, 1, 8, mix(min(dk.ew, dk.eh) / 2, rc, clamp(dk0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+        }
+        group {
+            show: pp_k > 0.01 and dc0 > 0.004
+            opacity: pp_k
+            let pedcw = dc.ew * (1 + dj.stretch - 0.07 * dc.bell + 0.003 * wobble)
+            let pedch = dc.eh * (1 - dj.stretch * 0.5 - 0.002 * wobble) + sg.up
+            let pedcl = dc.ex - pedcw / 2
+            let pedct = dc.ey - sg.up / 2 - pedch / 2
+            shader paper { at: pedcl - 8, pedct - 8; size: pedcw + 16, pedch + 16; values: 1, 4.7, 8, mix(min(dc.ew, dc.eh) / 2, rc, clamp(dc0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+        }
+        group {
+            show: pp_k > 0.01 and ds0 > 0.004
+            opacity: pp_k
+            let pedsw = ds.ew * (1 + dj.stretch - 0.07 * ds.bell + 0.003 * wobble)
+            let pedsh = ds.eh * (1 - dj.stretch * 0.5 - 0.002 * wobble)
+            let pedsl = ds.ex - pedsw / 2
+            let pedst = ds.ey - pedsh / 2
+            shader paper { at: pedsl - 8, pedst - 8; size: pedsw + 16, pedsh + 16; values: 1, 8.4, 8, mix(min(ds.ew, ds.eh) / 2, rc, clamp(ds0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+        }
+        group {
+            show: pp_k > 0.01 and dl0 > 0.004
+            opacity: pp_k
+            let pedlw = dl.ew * (1 + dj.stretch - 0.07 * dl.bell + 0.003 * wobble)
+            let pedlh = dl.eh * (1 - dj.stretch * 0.5 - 0.002 * wobble)
+            let pedll = dl.ex - pedlw / 2
+            let pedlt = dl.ey - pedlh / 2
+            shader paper { at: pedll - 8, pedlt - 8; size: pedlw + 16, pedlh + 16; values: 1, 12.1, 8, mix(min(dl.ew, dl.eh) / 2, rc, clamp(dl0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+        }
+        group {
+            show: pp_k > 0.01 and dm0 > 0.004
+            opacity: pp_k
+            let pedmw = dm.ew * (1 + dj.stretch - 0.07 * dm.bell + 0.003 * wobble)
+            let pedmh = dm.eh * (1 - dj.stretch * 0.5 - 0.002 * wobble) + sg.up
+            let pedml = dm.ex - pedmw / 2
+            let pedmt = dm.ey - sg.up / 2 - pedmh / 2
+            shader paper { at: pedml - 8, pedmt - 8; size: pedmw + 16, pedmh + 16; values: 1, 15.8, 8, mix(min(dm.ew, dm.eh) / 2, rc, clamp(dm0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+        }
+        group {
+            show: pp_k > 0.01 and dz0 > 0.004
+            opacity: pp_k
+            let pedzw = dz.fw * (1 + dz.stretch - 0.07 * dz.bell)
+            let pedzh = dz.fh * (1 - dz.stretch * 0.5)
+            let pedzl = dz.fx - pedzw / 2
+            let pedzt = dz.fcy - pedzh / 2
+            shader paper { at: pedzl - 8, pedzt - 8; size: pedzw + 16, pedzh + 16; values: 1, 19.5, 8, mix(min(dz.fw, dz.fh) / 2, 26 * u * desk_s * (1 - 0.73 * sq), clamp(dz0 * 1.6 - 0.1, 0, 1)); colors: obsidian, deep }
+        }
+        //  The Paper's worn sheet and tape on every drawer that is out: the shader rubs the edges and speckles the cream, and two strips of washi tape hold it down by its top corners.
+        group {
+            show: pp_k > 0.01 and dk0 > 0.9
+            opacity: pp_k * clamp(dk0 * 3 - 2, 0, 1)
+            let ppdkl = dk.ex - dk.ew / 2
+            let ppdkr = dk.ex + dk.ew / 2
+            let ppdkt = dk.ey - dk.eh / 2
+            let ppdkb = min(dk.ey + dk.eh / 2, vb - lf.t - 1)
+            box { at: ppdkl + 46 * u, ppdkt + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+            box { at: ppdkl + 46 * u, ppdkt + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdkl + 46 * u - 24 * u, ppdkt + 3 - 4; to: ppdkl + 46 * u + 24 * u, ppdkt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+            box { at: ppdkr - 46 * u, ppdkt + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+            box { at: ppdkr - 46 * u, ppdkt + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdkr - 46 * u - 24 * u, ppdkt + 3 - 4; to: ppdkr - 46 * u + 24 * u, ppdkt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+        }
+        group {
+            show: pp_k > 0.01 and dc0 > 0.9
+            opacity: pp_k * clamp(dc0 * 3 - 2, 0, 1)
+            let ppdcl = dc.ex - dc.ew / 2
+            let ppdcr = dc.ex + dc.ew / 2
+            let ppdct = dc.ey - dc.eh / 2
+            let ppdcb = min(dc.ey + dc.eh / 2, vb - lf.t - 1)
+            box { at: ppdcl + 46 * u, ppdct + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+            box { at: ppdcl + 46 * u, ppdct + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdcl + 46 * u - 24 * u, ppdct + 3 - 4; to: ppdcl + 46 * u + 24 * u, ppdct + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+            box { at: ppdcr - 46 * u, ppdct + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+            box { at: ppdcr - 46 * u, ppdct + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdcr - 46 * u - 24 * u, ppdct + 3 - 4; to: ppdcr - 46 * u + 24 * u, ppdct + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+        }
+        group {
+            show: pp_k > 0.01 and ds0 > 0.9
+            opacity: pp_k * clamp(ds0 * 3 - 2, 0, 1)
+            let ppdsl = ds.ex - ds.ew / 2
+            let ppdsr = ds.ex + ds.ew / 2
+            let ppdst = ds.ey - ds.eh / 2
+            let ppdsb = min(ds.ey + ds.eh / 2, vb - lf.t - 1)
+            box { at: ppdsl + 46 * u, ppdst + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+            box { at: ppdsl + 46 * u, ppdst + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdsl + 46 * u - 24 * u, ppdst + 3 - 4; to: ppdsl + 46 * u + 24 * u, ppdst + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+            box { at: ppdsr - 46 * u, ppdst + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+            box { at: ppdsr - 46 * u, ppdst + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdsr - 46 * u - 24 * u, ppdst + 3 - 4; to: ppdsr - 46 * u + 24 * u, ppdst + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+        }
+        group {
+            show: pp_k > 0.01 and dl0 > 0.9
+            opacity: pp_k * clamp(dl0 * 3 - 2, 0, 1)
+            let ppdll = dl.ex - dl.ew / 2
+            let ppdlr = dl.ex + dl.ew / 2
+            let ppdlt = dl.ey - dl.eh / 2
+            let ppdlb = min(dl.ey + dl.eh / 2, vb - lf.t - 1)
+            box { at: ppdll + 46 * u, ppdlt + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+            box { at: ppdll + 46 * u, ppdlt + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdll + 46 * u - 24 * u, ppdlt + 3 - 4; to: ppdll + 46 * u + 24 * u, ppdlt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+            box { at: ppdlr - 46 * u, ppdlt + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+            box { at: ppdlr - 46 * u, ppdlt + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdlr - 46 * u - 24 * u, ppdlt + 3 - 4; to: ppdlr - 46 * u + 24 * u, ppdlt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+        }
+        group {
+            show: pp_k > 0.01 and dm0 > 0.9
+            opacity: pp_k * clamp(dm0 * 3 - 2, 0, 1)
+            let ppdml = dm.ex - dm.ew / 2
+            let ppdmr = dm.ex + dm.ew / 2
+            let ppdmt = dm.ey - dm.eh / 2
+            let ppdmb = min(dm.ey + dm.eh / 2, vb - lf.t - 1)
+            box { at: ppdml + 46 * u, ppdmt + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+            box { at: ppdml + 46 * u, ppdmt + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdml + 46 * u - 24 * u, ppdmt + 3 - 4; to: ppdml + 46 * u + 24 * u, ppdmt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+            box { at: ppdmr - 46 * u, ppdmt + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+            box { at: ppdmr - 46 * u, ppdmt + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdmr - 46 * u - 24 * u, ppdmt + 3 - 4; to: ppdmr - 46 * u + 24 * u, ppdmt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+        }
+        group {
+            show: pp_k > 0.01 and dz0 > 0.9
+            opacity: pp_k * clamp(dz0 * 3 - 2, 0, 1)
+            let ppdzl = dz.fx - dz.fw / 2
+            let ppdzr = dz.fx + dz.fw / 2
+            let ppdzt = dz.fcy - dz.fh / 2
+            let ppdzb = min(dz.fcy + dz.fh / 2, vb - lf.t - 1)
+            box { at: ppdzl + 46 * u, ppdzt + 3; size: 64 * u, 19; rotate: -5deg; color: #e9dba8; opacity: 86% }
+            box { at: ppdzl + 46 * u, ppdzt + 3; size: 64 * u, 19; rotate: -5deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdzl + 46 * u - 24 * u, ppdzt + 3 - 4; to: ppdzl + 46 * u + 24 * u, ppdzt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: -5deg }
+            box { at: ppdzr - 46 * u, ppdzt + 3; size: 64 * u, 19; rotate: 4deg; color: #c9d8ec; opacity: 86% }
+            box { at: ppdzr - 46 * u, ppdzt + 3; size: 64 * u, 19; rotate: 4deg; stroke: 1; color: deep; opacity: 22% }
+            line { from: ppdzr - 46 * u - 24 * u, ppdzt + 3 - 4; to: ppdzr - 46 * u + 24 * u, ppdzt + 3 - 4; width: 1.2; color: #ffffff; opacity: 30%; rotate: 4deg }
+        }
         //  The Cassette's detail on each drawer, only while it is plastic and the drawer is out: an accent-coloured tab at the top left (opposite the grips) (a console's button), a row of straight vertical grip slots in the bottom right
         //  corner (like the vents of a handheld: dark, with a lit edge) that run a few pixels past the drawer's bottom edge as if they wrapped round the base, and a screw in the bottom left.
         //  Inside the drawer they stay in its margin, so they never touch what it holds.

@@ -1,0 +1,23 @@
+# Paper: a scrapbook desktop. Every panel is a worn sheet of cream paper, taped down, written on in pencil-and-marker handwriting.
+# `tint` is the paper, `ink` the graphite it is written in, `deep` the brown of its edges and shadows; the accent is a pencil-crayon blue.
+name = "Paper"
+tagline = "Scrapbook"
+base = "paper"
+font = "Fuzzy Bubbles"
+corner_rounding = 6
+
+[palette]
+ink    = "#3b3631"
+faint  = "#857b6c"
+mint   = "#6a90c9"
+mintlo = "#4f76b0"
+minthi = "#a9c1e6"
+onmint = "#fffaf0"
+tint   = "#efe4cd"
+panel  = "#f6eedd"
+deep   = "#5a4d3d"
+off    = "#d9cbae"
+alert  = "#d9594f"
+
+[card]
+colors = ["#efe4cd", "#f6eedd", "#3b3631", "#6a90c9", "#d9594f"]
