@@ -24,6 +24,7 @@ return function(with_dirs, reload, apply, refresh_local)
         fact.wh_key = W.key ~= ""
         text.wh_keyinfo = W.key ~= "" and "Key saved" or "No key"
         text.wh_sort_t = SORTS[sort][2]
+        fact.wh_sort_i = sort - 1
     end
     local function save()
         pcall(sys.call, "files.write", "wallhaven.json", W)
@@ -80,8 +81,10 @@ return function(with_dirs, reload, apply, refresh_local)
         end
     end)
     on("wh_search", function() if live then search(0) end end)
-    on("wh_sort", function()
-        sort = sort % #SORTS + 1
+    on("wh_sort_set", function(i)
+        i = math.floor((tonumber(i) or 0) + 0.5) + 1
+        if not SORTS[i] or i == sort then return end
+        sort = i
         show_keys()
         if live then search(0) end
     end)
