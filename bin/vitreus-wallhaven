@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""vitreus-wallhaven [options] QUERY: downloads pictures from wallhaven.cc (safe for work, no account) into the wallpaper folder, where the picker lists them.
+
+  --dir DIR       where to put them (default ~/Pictures/Wallpapers)
+  --count N       how many (default 12, at most 24: one page)
+  --sort S        toplist (default), date_added, views, favorites, random, relevance
+  --range R       for toplist: 1d 3d 1w 1M 3M 6M 1y (default 1M)
+  --atleast WxH   smallest size (default 1920x1080)
+  --purity P      three digits, SFW / sketchy / NSFW, each 0 or 1 (default 100). Sketchy needs no account; NSFW needs an API key
+  --config FILE   a JSON file whose "key" is the Wallhaven API key (the shell keeps it in its data folder, mode 600)
+  --ratios R      landscape (default), portrait, or 16x9 and the like; "any" for all
+
+Browsing, for the picker's Wallhaven view (no picture is downloaded but the thumbnails):
+  --list --offset N --count 16 --thumbs DIR   prints "META<TAB>total pages" and one "R<TAB>id<TAB>thumbnail file<TAB>resolution" line per result, from result N on
+  --one ID --dir DIR                           downloads that picture (the full size) into DIR and prints its path
+
+Files are named wallhaven-<id>.<ext>, the site's own name, so one saved from the site is not fetched twice. Each is written as .part and renamed when whole.
+Prints one line per picture that is there at the end: its path. Exit 1 when the search itself fails. Wallhaven allows 45 requests a minute; this makes one + one per new picture."""
+import argparse, json, os, re, sys, urllib.parse, urllib.request
+
+ap = argparse.ArgumentParser()
+ap.add_argument("query", nargs="?", default="")
+ap.add_argument("--dir", default=os.path.expanduser("~/Pictures/Wallpapers"))
+ap.add_argument("--count", type=int, default=12)
+ap.add_argument("--sort", default="toplist", choices=["toplist", "date_added", "views", "favorites", "random", "relevance"])
+ap.add_argument("--range", default="1M", choices=["1d", "3d", "1w", "1M", "3M", "6M", "1y"])
+ap.add_argument("--atleast", default="1920x1080")
+ap.add_argument("--list", action="store_true")
+ap.add_argument("--offset", type=int, default=0)
+ap.add_argument("--thumbs", default="")
+ap.add_argument("--one", default="")
+ap.add_argument("--purity", default="100")
+ap.add_argument("--config", default="")
+ap.add_argument("--ratios", default="landscape")
+a = ap.parse_args()
+if not re.fullmatch(r"[01]{3}", a.purity) or a.purity == "000":
+    sys.exit("bad --purity")
+if not re.fullmatch(r"\d{3,5}x\d{3,5}", a.atleast) or not re.fullmatch(r"landscape|portrait|any|\d{1,2}x\d{1,2}", a.ratios):
+    sys.exit("bad --atleast or --ratios")
+
+q = {"q": a.query, "purity": a.purity, "categories": "111", "sorting": a.sort, "atleast": a.atleast}
+if a.sort == "toplist": q["topRange"] = a.range
+if a.ratios != "any": q["ratios"] = a.ratios
+key = ""
+if a.config:
+    try:
+        with open(a.config) as f: key = str(json.load(f).get("key", "")).strip()
+    except (OSError, ValueError): pass
+if a.purity[2] == "1" and not key:
+    sys.exit("NSFW needs an API key")
+headers = {"User-Agent": "vitreus-wallhaven"}
+if key: headers["X-API-Key"] = key                 # (a header, not ?apikey=, so it is in no URL or log)
+req = lambda url: urllib.request.Request(url, headers=headers)
+def get_json(url):
+    with urllib.request.urlopen(req(url), timeout=20) as r:
+        return json.load(r)
+
+def download(url, dest):
+    with urllib.request.urlopen(req(url), timeout=60) as r, open(dest + ".part", "wb") as f:
+        while chunk := r.read(1 << 16): f.write(chunk)
+    os.replace(dest + ".part", dest)
+
+if a.one:                                              # one picture, full size, by its id
+    if not re.fullmatch(r"[a-z0-9]{4,10}", a.one): sys.exit("bad id")
+    os.makedirs(a.dir, exist_ok=True)
+    for f in os.listdir(a.dir):
+        if f.startswith("wallhaven-%s." % a.one) and not f.endswith(".part"):
+            print(os.path.join(a.dir, f)); sys.exit(0)
+    try:
+        url = get_json("https://wallhaven.cc/api/v1/w/" + a.one)["data"]["path"]
+        if not url.startswith("https://w.wallhaven.cc/"): sys.exit("unexpected address")
+        dest = os.path.join(a.dir, "wallhaven-%s%s" % (a.one, os.path.splitext(url)[1].lower()))
+        download(url, dest)
+    except SystemExit: raise
+    except Exception as e:
+        sys.exit("download failed: %s" % e)
+    print(dest); sys.exit(0)
+
+if a.list:                                             # a window of the results, with their thumbnails made ready
+    PER = 24                                           # (Wallhaven's page: the window may reach into two of them)
+    first, last = a.offset // PER + 1, (a.offset + max(1, a.count) - 1) // PER + 1
+    items, pages = [], 1
+    try:
+        for pg in range(first, last + 1):
+            d = get_json("https://wallhaven.cc/api/v1/search?" + urllib.parse.urlencode(dict(q, page=pg)))
+            items += d["data"]
+            pages = int(d.get("meta", {}).get("last_page", 1))
+            if pg >= pages: break
+            if a.sort == "random": pass
+        total = int(d.get("meta", {}).get("total", len(items)))
+    except Exception as e:
+        sys.exit("search failed: %s" % e)
+    window = items[a.offset - (first - 1) * PER:][:a.count]
+    os.makedirs(a.thumbs, exist_ok=True)
+    from concurrent.futures import ThreadPoolExecutor
+    def thumb(item):
+        wid = item.get("id", "")
+        url = (item.get("thumbs") or {}).get("small", "")
+        if not re.fullmatch(r"[a-z0-9]{4,10}", wid) or not url.startswith("https://th.wallhaven.cc/"): return None
+        dest = os.path.join(a.thumbs, wid + ".jpg")
+        if not os.path.exists(dest):
+            try: download(url, dest)
+            except Exception: return None
+        return dest
+    with ThreadPoolExecutor(8) as ex: files = list(ex.map(thumb, window))
+    print("META\t%d" % max(1, -(-total // max(1, a.count))))
+    for item, f in zip(window, files):
+        if f: print("R\t%s\t%s\t%s" % (item["id"], f, item.get("resolution", "")))
+    sys.exit(0)
+
+try:
+    results = get_json("https://wallhaven.cc/api/v1/search?" + urllib.parse.urlencode(q))["data"]
+except Exception as e:
+    sys.exit("search failed: %s" % e)
+
+os.makedirs(a.dir, exist_ok=True)
+for item in results[:max(1, min(a.count, 24))]:
+    wid, url = item.get("id", ""), item.get("path", "")
+    if not re.fullmatch(r"[a-z0-9]{4,10}", wid) or not url.startswith("https://w.wallhaven.cc/"):      # (it becomes a file name)
+        continue
+    dest = os.path.join(a.dir, "wallhaven-%s%s" % (wid, os.path.splitext(url)[1].lower()))
+    if os.path.exists(dest) or any(f.startswith("wallhaven-%s." % wid) for f in os.listdir(a.dir)):
+        continue
+    try:
+        with urllib.request.urlopen(req(url), timeout=60) as r, open(dest + ".part", "wb") as f:
+            while chunk := r.read(1 << 16): f.write(chunk)
+        os.replace(dest + ".part", dest)
+    except Exception as e:
+        print("skipped %s: %s" % (wid, e), file=sys.stderr)
+        try: os.remove(dest + ".part")
+        except OSError: pass
+for f in sorted(os.listdir(a.dir)):
+    if f.startswith("wallhaven-") and not f.endswith(".part") and any(("wallhaven-%s." % r.get("id")) in f for r in results[:a.count]):
+        print(os.path.join(a.dir, f))

@@ -3850,6 +3850,7 @@ end)
 -- can hold hundreds of full-size images. Choosing one asks awww to fade to it; the wallpaper watcher
 -- above then sees the change, which is also what re-runs Iris.
 local WP_PER_PAGE = 16
+wh_hook = { active = function() return false end }      -- Wallhaven's view of the gallery (logic/wallhaven.luau) fills in the rest
 local wp_files = {}
 local wp_view = {}                        -- wp_files narrowed by the colour filter: what the gallery pages over
 local wp_page = 0
@@ -3974,6 +3975,7 @@ local function wp_crop(files, kind, w, h, done)
 end
 
 local function wp_show_page()
+    if wh_hook.active() then return end           -- (the gallery is showing Wallhaven's results)
     local rows, sel = {}, -1
     for i = 1, WP_PER_PAGE do
         local f = wp_view[wp_page * WP_PER_PAGE + i]
@@ -4177,6 +4179,7 @@ local function wp_load()
             local shown = wp_dir
             if shown:sub(1, #d.home) == d.home then shown = "~" .. shown:sub(#d.home + 1) end
             text.wp_dirtext = shown
+            text.wp_dirpath = wp_dir
             wp_cache = d.cache
             run("mkdir", { "-p", d.cache }, function() end)
             run("ls", { "-1", wp_dir }, function(list, code)
@@ -4230,15 +4233,18 @@ end)
 on("wp_dir_choose", function() if FACE.dir ~= "" then wp_dir_use(FACE.dir) end end)
 on("wp_dir_default", function() wp_dir_use("") end)
 on("wp_pick", function(i)
+    if wh_hook.active() then wh_hook.pick(i) return end
     local f = wp_view[wp_page * WP_PER_PAGE + i + 1]
     if f then wp_apply(f) end
 end)
 on("wp_prev", function()
+    if wh_hook.active() then wh_hook.prev() return end
     wp_page = wp_page - 1
     if wp_page < 0 then wp_page = wp_pages() - 1 end
     wp_refresh()
 end)
 on("wp_next", function()
+    if wh_hook.active() then wh_hook.next() return end
     wp_page = wp_page + 1
     if wp_page >= wp_pages() then wp_page = 0 end
     wp_refresh()
@@ -6406,6 +6412,7 @@ end
         { "Settings: Wallpaper", "open", open_settings("pg_wall"), "background picture image folder slideshow desktop" },
         { "Settings: Glass", "open", open_settings("pg_glass"), "blur transparency frosted liquid look appearance theme" },
         { "Settings: Display", "open", open_settings("pg_disp"), "monitor screen resolution refresh rate scale arrangement vrr position" },
+        { "Settings: Idle and sleep", "open", open_settings("pg_idle"), "lock screen off sleep suspend timeout hypridle inactivity minutes" },
         { "Settings: Night mode", "open", open_settings("pg_night"), "nightlight blue light warm tint redshift filter schedule eyes" },
         { "Game mode: toggle", "action", function() spawn('pleamar --say vitreus "emit game_toggle"') end, "game gaming play performance fullscreen tearing latency fps on off" },
         { "Night mode: toggle", "action", function() spawn('pleamar --say vitreus "emit night_toggle"') end, "nightlight blue light warm tint redshift filter on off" },
@@ -7120,6 +7127,10 @@ require("logic/tray")(set_panel)
 
 -- nightmode: see logic/nightmode.luau
 require("logic/nightmode")(with_dirs)
+-- wallhaven (Settings > Wallpaper): see logic/wallhaven.luau
+require("logic/wallhaven")(with_dirs, function() wp_load() end, function(f) wp_apply(f) end, function() wp_refresh() end)
+-- idle and sleep: see logic/idle.luau
+require("logic/idle")(with_dirs)
 -- game mode: see logic/gamemode.luau
 require("logic/gamemode")()
 

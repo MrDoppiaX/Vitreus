@@ -74,9 +74,9 @@ scene Vitreus {
     //  search, the desk's inputs) still has it lent exclusively, to the copy it is on only. A loan ends only when this rule goes false, so the corner dock
     //  asks for the keyboard on an empty workspace while one of its icons is under the pointer or held (`cdk_hot`, `cdk_down`), not all the time:
     //  `cdk_on and ws_empty` held every loan on both copies, and the cursor stuck again.
-    surface { size: full, full; anchor: bar_anchor; margin: 0; level: top, overlay while panel == launch or panel == settings or panel == volume or panel == notif; reserve: 62 while bar_anchor == top and not bar_frame and bar_size > 0.995; rate: 480, 120 while bar_fps == 120 and not (media.playing and fw_on), 60 while media.playing and fw_on; screens: each max 2; open: sb > 0.5 or bar_others; keyboard: on_demand while (panel != none and panel != volume and panel != notif) or wp_picker_open or ov_open or pk_open or desk_kb or (desk_open and ws_empty) or (((cdk_hot > 0.5 and cdk_ga > 0.5) or cdk_down > 0.5) and ws_empty) or dash_open or (axf_on and ax_open) }
+    surface { size: full, full; anchor: bar_anchor; margin: 0; level: top, overlay while panel == launch or panel == settings or panel == volume or panel == notif; reserve: 62 while bar_anchor == top and not bar_frame and bar_size > 0.995; rate: 480, 120 while bar_fps == 120 and not (media.playing and fw_on), 60 while media.playing and fw_on; screens: each max 1; open: sb > 0.5 or bar_others; keyboard: on_demand while (panel != none and panel != volume and panel != notif) or wp_picker_open or ov_open or pk_open or desk_kb or (desk_open and ws_empty) or (((cdk_hot > 0.5 and cdk_ga > 0.5) or cdk_down > 0.5) and ws_empty) or dash_open or (axf_on and ax_open) }
     permissions { services: "files", "files.write", "auth", "clock", "clock.seconds", "thumbnails", "thumbnails.*", "audio", "audio.*", "window", "media", "media.*", "workspaces", "workspaces.focus", "brightness", "brightness.*", "battery", "network", "network.*", "bluetooth", "bluetooth.*", "apps", "tray", "tray.*", "notifications", "notifications.*"
-                  run: "git", "env", "fc-list", "fc-match", "pleamar", "fuser", "ps", "pleamar-update", "cava", "playerctl", "curl", "notify-send", "which", "pgrep", "pkill", "systemctl", "hyprctl", "socat", "printenv", "awww", "iris", "cp", "ls", "xdg-user-dir", "mv", "niri", "magick", "grim", "mkdir", "bluetoothctl", "nmcli", "busctl", "chmod", "wl-copy", "find", "vitreus-term", "vitreus-themes", "claude", "ollama", "codex", "pacman", "paru", "yay", "gemini", "cliphist", "stat", "file", "vitreus-clipimg", "grep", "pactl", "sed", "setsid", "powerprofilesctl", "loginctl", "vitreus-polkit-agent", "vitreus-sysmon", "vitreus-addons", "vitreus-eq", "vitreus-keep", "vitreus-inhibit", "pw-play", "ffmpeg", "tesseract", "cat", "date", "udevadm", "test", "wl-paste", "ffprobe" }
+                  run: "git", "env", "fc-list", "fc-match", "pleamar", "fuser", "ps", "pleamar-update", "cava", "playerctl", "curl", "notify-send", "which", "pgrep", "pkill", "systemctl", "hyprctl", "socat", "printenv", "awww", "iris", "cp", "ls", "xdg-user-dir", "mv", "niri", "magick", "grim", "mkdir", "bluetoothctl", "nmcli", "busctl", "chmod", "wl-copy", "find", "vitreus-term", "vitreus-themes", "vitreus-wallhaven", "claude", "ollama", "codex", "pacman", "paru", "yay", "gemini", "cliphist", "stat", "file", "vitreus-clipimg", "grep", "pactl", "sed", "setsid", "powerprofilesctl", "loginctl", "vitreus-polkit-agent", "vitreus-sysmon", "vitreus-addons", "vitreus-eq", "vitreus-keep", "vitreus-inhibit", "pw-play", "ffmpeg", "tesseract", "cat", "date", "udevadm", "test", "wl-paste", "ffprobe" }
 
     model wifi_nets max 16 { ssid: text; strength: number; secure: bool; known: bool; active: bool; band: number; bands: text; bandw: number; chan: number; rate: number; sec: text; busy: number }
     model bat_devs max 6 { name: text; level: number }
@@ -592,7 +592,7 @@ scene Vitreus {
     event settings_toggle ->        // from a key bind (hypr_vitreus.lua): open or close Settings
     //  The pages of the settings panel, and how far the second is in (for the sidebar's highlight and the
     //  panel's height, which follows the page).
-    fact set_page: pg_wall | pg_glass | pg_disp | pg_bar | pg_night | pg_hypr | pg_about | pg_sys | pg_nt | pg_lock | pg_wm | pg_vpn | pg_clock | pg_theme | pg_keys | pg_addons = pg_wall
+    fact set_page: pg_wall | pg_glass | pg_disp | pg_bar | pg_night | pg_hypr | pg_about | pg_sys | pg_nt | pg_lock | pg_wm | pg_vpn | pg_clock | pg_theme | pg_keys | pg_addons | pg_idle = pg_wall
     //  The Bar page: which monitors the bar is on, one or two (logic/bar_monitors.luau). `bar_sel.i` is whether monitor tile i is chosen, and `bar_rest`
     //  whether some plugged-in monitor is not (the ones that can keep the frame alone).
     fact bar_rest = false
@@ -1491,6 +1491,7 @@ scene Vitreus {
     prop set_pgp = 0 ~calm
     prop set_pgy = 0 ~calm
     prop set_pgo = 0 ~calm
+    prop set_pgi = 0 ~calm
     prop set_pgb = 0 ~calm
     prop bs.ws = 1 ~calm              // each piece of the bar, 1 shown .. 0 hidden: its room and its opacity
     prop bs.title = 1 ~calm
@@ -1615,6 +1616,7 @@ scene Vitreus {
     follow set_pgp = if(set_page == pg_theme, 1, 0)
     follow set_pgy = if(set_page == pg_keys, 1, 0)
     follow set_pgo = if(set_page == pg_addons, 1, 0)
+    follow set_pgi = if(set_page == pg_idle, 1, 0)
     follow bs.ws = if(bv.ws, 1, 0)
     follow bs.title = if(bv.title and (bar_anchor == top or bar_anchor == bottom), 1, 0)
     follow bs.media = if(bv.media and (bar_anchor == top or bar_anchor == bottom), 1, 0)
@@ -1738,6 +1740,34 @@ scene Vitreus {
     fact about_restarting = false   // Restart was pressed: the shell is about to be replaced (the only reason to grey the button out)
     //  Night mode (Settings > Night mode): a warm tint over the whole screen, made by Hyprland's screen shader (see the
     //  logic), by hand or on a schedule.
+    fact idle_lock = 5                  // Settings > Idle: minutes before the lock, the screen going dark and sleep (0 = never); logic/idle.luau
+    fact idle_off = 7
+    fact idle_sleep = 0
+    fact idle_lock_i = 4                // where each sits along the slider's list of times
+    fact idle_off_i = 5
+    fact idle_sleep_i = 0
+    text idle_lock_t = ""
+    text idle_off_t = ""
+    text idle_sleep_t = ""
+    event idle_set ->                   // the row times 100, plus the step along the list (0 to 13)
+    fact wh_sfw = true                  // Wallpaper > Wallhaven: which purities to search (logic/wallhaven.luau)
+    fact wh_sk = false
+    fact wh_nsfw = false
+    fact wh_key = false                 // an API key is saved (its value is never shown)
+    text wh_q = ""
+    text wh_key_in = ""
+    text wh_status = ""
+    text wh_keyinfo = ""
+    text wp_dirpath = ""
+    event wh_toggle ->                  // 0 SFW, 1 sketchy, 2 NSFW
+    fact wp_src = 0                     // the gallery's source: 0 my folder, 1 Wallhaven's search results
+    prop wp_srcz = 0 ~calm
+    follow wp_srcz = wp_src
+    text wh_sort_t = "Top"
+    event wp_src_set ->
+    event wh_search ->
+    event wh_sort ->
+    event wh_savekey ->
     fact night_on = false               // the shader is on now
     fact night_auto = false             // it switches itself on and off on the schedule
     fact night_t = 0.65                 // how warm, 0 (6500 K) to 1 (2500 K), along the slider
@@ -1895,7 +1925,10 @@ scene Vitreus {
     event lk_test ->                   // lock now, as a test: Esc or a minute opens it
     fact gl_scroll_to = 0              // the Glass page scrolls like the Lock screen's
     prop gl_scroll = 0 ~quick
+    prop wp_scroll = 0 ~quick
+    fact wp_scroll_to = 0              // where the Wallpaper page is scrolled to (unscaled, from the top)
     follow gl_scroll = gl_scroll_to
+    follow wp_scroll = wp_scroll_to
     fact lk_scroll_to = 0              // the page scrolls like System monitor's
     fact th_scroll_to = 0              // the Theme page too (Settings > Theme)
     prop th_scroll = 0 ~quick
@@ -2390,8 +2423,8 @@ scene Vitreus {
     follow vm = if(vm_open and panel == controls, 1, 0)
     follow mvis = if(mixer.count > 0 or vm_open, 1, 0)
     //  launch_toggle and settings_toggle are handled by the logic (logic/panel_monitor.luau): it opens them on the focused monitor.
-    on change panel { wpd_open = false; font_dd_open = false; dd_open = false; vm_open = false; panel_sub = none; disp_res_open = false; disp_scroll_to = 0; sm_scroll_to = 0; nt_scroll_to = 0; lk_scroll_to = 0; gl_scroll_to = 0; ck_scroll_to = 0; ad_scroll_to = 0; wm_scroll_to = 0; vpn_scroll_to = 0 }
-    on change set_page { font_dd_open = false; disp_res_open = false; disp_scroll_to = 0; sm_scroll_to = 0; nt_scroll_to = 0; lk_scroll_to = 0; gl_scroll_to = 0; ck_scroll_to = 0; ad_scroll_to = 0; wm_scroll_to = 0; vpn_scroll_to = 0; vpn_arm = -1 }
+    on change panel { wp_scroll_to = 0; wpd_open = false; font_dd_open = false; dd_open = false; vm_open = false; panel_sub = none; disp_res_open = false; disp_scroll_to = 0; sm_scroll_to = 0; nt_scroll_to = 0; lk_scroll_to = 0; gl_scroll_to = 0; ck_scroll_to = 0; ad_scroll_to = 0; wm_scroll_to = 0; vpn_scroll_to = 0 }
+    on change set_page { wp_scroll_to = 0; font_dd_open = false; disp_res_open = false; disp_scroll_to = 0; sm_scroll_to = 0; nt_scroll_to = 0; lk_scroll_to = 0; gl_scroll_to = 0; ck_scroll_to = 0; ad_scroll_to = 0; wm_scroll_to = 0; vpn_scroll_to = 0; vpn_arm = -1 }
     //  The Hyprland and Pleamar-WM pages read their settings from the system when they are shown, and only then: reading them on every page change
     //  (a dozen commands and a couple of hundred fact writes) stalled the scene for half a second on each click anywhere in Settings.
     on change set_page while set_page == pg_hypr { emit hy_refresh }
@@ -4431,6 +4464,7 @@ scene Vitreus {
         }
         box { from: 0, 0; size: 96 * pu, 54 * pu; corner: 8 * pu; stroke: 2 * pu; color: mint; opacity: if(wp_sel == t.index, 100%, 0) }
         on press touch { emit pick(t.index) }
+        on scroll touch { wp_scroll_to = clamp(wp_scroll_to - wheel * 44, 0, max(0, wp.h - set.h)) }
     }
 
     //  A weather icon, drawn from shapes (there is no icon font): `kind` 0 clear · 1 partly cloudy · 2 cloud ·
@@ -5070,8 +5104,9 @@ scene Vitreus {
     let side.h3 = 302
     let side.dp = 326
     let side.nm = 354                  // the Night mode row
-    let side.h4 = 388
-    let side.hy = 412
+    let side.id = 382                  // the Idle row
+    let side.h4 = 416
+    let side.hy = 440
     let side.wm = side.hy + if(wm_hypr or wm_niri, 28, 0)    // the Hyprland row is only there on Hyprland (and the niri one on niri), and the Pleamar-WM one only under pleamar-wm
     let side.ky = side.wm + if(wm_pwm, 28, 0)              // the Keybinds row
     let side.vpn = side.ky + 28
@@ -5098,6 +5133,7 @@ scene Vitreus {
     //  every click in the sidebar. A page taller than this scrolls inside it (they have their scroll thumb and "More" cue); a shorter one has
     //  empty glass at its foot. It never goes below the sidebar's last row.
     let th_ex = max(0, floor((themes.count + 3) / 4) - 1)      // rows of theme cards beyond the first (Settings > Theme)
+    let wp.h = 526                    // the Wallpaper page: to the bottom of the gallery (it scrolls inside the panel when the panel is shorter)
     let set.h = max(side.ab + 40, 456 + 88 * th_ex * set_pgp)
     let ss.w = (120 + 500 * (min(1, ds0 * 1.6) + max(0, ds0 - 1) * 0.6)) * pu
     let ss.hh = bar.h / 2 + (8 + 36 + 8 + set.h + 16) * pu * ds0 + max(0, sag)

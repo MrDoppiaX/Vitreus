@@ -34,18 +34,23 @@ return function()
         return eta and (base .. " · " .. span(eta) .. " left") or base
     end
 
-    -- Low-battery alerts: one critical notification when the charge falls to 10 %, another at 5 % (critical ones ignore Do Not Disturb).
-    -- `alerted` is the lowest level already announced; it is re-armed as soon as the battery is not draining or is back above 10 %.
+    -- Low-battery alerts, once each per discharge: 20 % and 15 % are ordinary notifications ("plug in soon"); 10 % and 5 % are critical, so they get through Do Not Disturb.
+    -- `alerted` is the lowest level already announced; it is re-armed as soon as the battery is not draining or is back above 20 %.
     -- A jump past a level (the machine slept at 12 %, woke at 4 %) says only the level it is at.
-    local LEVELS = { { 5, "Battery critically low" }, { 10, "Battery low" } }
+    local LEVELS = {
+        { 5, "Battery critically low", "critical" },
+        { 10, "Battery low", "critical" },
+        { 15, "Battery low", "normal" },
+        { 20, "Battery getting low", "normal" },
+    }
     local alerted = math.huge
     local function alert(status, capacity)
-        if status ~= "Discharging" or not capacity or capacity > 10 then alerted = math.huge; return end
+        if status ~= "Discharging" or not capacity or capacity > 20 then alerted = math.huge; return end
         for _, l in ipairs(LEVELS) do
             if capacity <= l[1] then
                 if l[1] < alerted then
                     alerted = l[1]
-                    run("notify-send", { "-u", "critical", "-a", "Vitreus", l[2], capacity .. "% left. Plug in the charger." }, function() end)
+                    run("notify-send", { "-u", l[3], "-a", "Vitreus", l[2], capacity .. "% left. Plug in the charger." }, function() end)
                 end
                 return
             end

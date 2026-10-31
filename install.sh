@@ -244,6 +244,7 @@ if [ "$action" = uninstall ]; then
     if [ -L "$HOME/.local/bin/vitreus-files" ]; then run rm -f "$HOME/.local/bin/vitreus-files"; fi
     if [ -L "$HOME/.local/bin/vitreus-keep" ]; then run rm -f "$HOME/.local/bin/vitreus-keep"; fi
     if [ -L "$HOME/.local/bin/vitreus-themes" ]; then run rm -f "$HOME/.local/bin/vitreus-themes"; fi
+    if [ -L "$HOME/.local/bin/vitreus-wallhaven" ]; then run rm -f "$HOME/.local/bin/vitreus-wallhaven"; fi
     if [ -L "$HOME/.local/bin/vitreus-edit" ]; then run rm -f "$HOME/.local/bin/vitreus-edit"; fi
     if [ -L "$HOME/.local/bin/vitreus-addons" ]; then run rm -f "$HOME/.local/bin/vitreus-addons"; fi
     if [ -L "$HOME/.local/bin/vitreus-feedfetch" ]; then run rm -f "$HOME/.local/bin/vitreus-feedfetch"; fi
@@ -709,6 +710,7 @@ if [ -x "$dest/bin/vitreus-clipimg" ] || $dry; then
     [ -x "$dest/bin/vitreus-files" ] && run ln -sf "$dest/bin/vitreus-files" "$HOME/.local/bin/vitreus-files"
     [ -x "$dest/bin/vitreus-keep" ] && run ln -sf "$dest/bin/vitreus-keep" "$HOME/.local/bin/vitreus-keep"
     [ -x "$dest/bin/vitreus-themes" ] && run ln -sf "$dest/bin/vitreus-themes" "$HOME/.local/bin/vitreus-themes"       # the shell reads the theme files through it
+    [ -x "$dest/bin/vitreus-wallhaven" ] && run ln -sf "$dest/bin/vitreus-wallhaven" "$HOME/.local/bin/vitreus-wallhaven"       # Settings > Wallpaper > Wallhaven fetches through it
     [ -x "$dest/bin/vitreus-edit" ] && run ln -sf "$dest/bin/vitreus-edit" "$HOME/.local/bin/vitreus-edit"             # opens a file in the person's editor (add-ons' settings gears)
     [ -x "$dest/bin/vitreus-addons" ] && run ln -sf "$dest/bin/vitreus-addons" "$HOME/.local/bin/vitreus-addons"       # and the add-ons in ~/.config/pleamar/vitreus-addons (never touched here)
     [ -x "$dest/bin/vitreus-feedfetch" ] && run ln -sf "$dest/bin/vitreus-feedfetch" "$HOME/.local/bin/vitreus-feedfetch"       # the News & Weather add-on (addons/news-weather) reads its feeds through it
