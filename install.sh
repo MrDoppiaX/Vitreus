@@ -495,10 +495,10 @@ LIST
                 fi
             fi
         fi
-        # 0.4.14 is where text `size:` takes expressions; older pleamar stops at "expected a number here" and the shell does not load.
-        pleamar_min="0.4.14"
+        # 0.5.0 is where the facts motion.reduced and color.scheme exist; older pleamar stops at "there is nothing called 'motion.reduced'" and the shell does not load.
+        pleamar_min="0.5.0"
         if [ -n "$pv" ] && [ "$(printf '%s\n%s\n' "$pleamar_min" "$pv" | sort -V | head -1)" != "$pleamar_min" ]; then
-            warn "Vitreus needs pleamar $pleamar_min or newer (this is $pv): older ones fail to load the scene with \"expected a number here\""
+            warn "Vitreus needs pleamar $pleamar_min or newer (this is $pv): older ones fail to load the scene with \"there is nothing called 'motion.reduced'\""
             if have pleamar-update; then
                 if ask "update pleamar now? (built from source; a few minutes)"; then
                     if $dry; then echo "    would run: pleamar-update"
