@@ -7097,6 +7097,9 @@ end)()
 -- bar monitors: see logic/bar_monitors.luau
 require("logic/bar_monitors")(with_dirs)
 
+-- which graphics card draws the shell (Settings > Display): see logic/gpu.luau
+require("logic/gpu")(with_dirs)
+
 -- panels from a key, on the focused monitor: see logic/panel_monitor.luau
 require("logic/panel_monitor")()
 

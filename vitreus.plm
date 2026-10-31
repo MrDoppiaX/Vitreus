@@ -715,6 +715,10 @@ scene Vitreus {
     fact disp_sdrb = 1
     fact disp_sdrs = 1
     fact disp_auto = true           // reapply a saved profile when its set of displays is connected
+    fact gpu_has = false            // the machine has more than one graphics card (logic/gpu.luau): Settings > Display offers the choice
+    fact gpu_dis = false            // the shell is drawn on the discrete one
+    text gpu_note = ""
+    event gpu_toggle ->
     fact disp_trial = 0             // seconds left of a change on trial; 0 for none
     fact disp_grab_i = 0
     fact disp_px = 0
@@ -1575,6 +1579,7 @@ scene Vitreus {
     prop adk_ay.3 = 0 ~calm
     prop trn = 0 ~calm                // how many tray icons the bar holds, smoothly: the bar widens with it
     prop disp_auto_pill = 0 ~pop
+    prop gpu_pill = 0 ~pop
     prop snd_pill = 0 ~pop
     prop tpw_pill = 0 ~pop           // Settings > Theme > Pin wallpaper's switch
     prop twg_pill = 0 ~pop           // (and Pin widgets')
@@ -2352,6 +2357,7 @@ scene Vitreus {
     follow hy_k3 = if(hy_nat, 1, 0)
     follow ni_k0 = if(ni_single, 1, 0)
     follow disp_auto_pill = if(disp_auto, 1, 0)
+    follow gpu_pill = if(gpu_dis, 1, 0)
     follow snd_pill = if(snd_on, 1, 0)
     follow tpw_pill = if(tpw_on, 1, 0)
     follow twg_pill = if(twg_on, 1, 0)
@@ -5044,7 +5050,7 @@ scene Vitreus {
     //  How tall the settings page in view is (unscaled): Wallpaper, Glass, Display.
     //  The Display page: its cards down to the profiles one, which is as tall as its rows (none: a line).
     let disp.prows = max(24, disp_pn_s * 30)
-    let disp.h = 554 + disp.prows + 114
+    let disp.h = 554 + disp.prows + 114 + if(gpu_has, 98, 0)
     //  The System monitor page: the storage card has a row for each drive and the temperature card one for each sensor, and what is under
     //  them slides up as they shrink (see the page, which is generated: sm.ds and sm.dt are how much each has given back).
     //  The sidebar, top to bottom: LOOK (Wallpaper, Theme, Glass), SHELL (Bar, Widgets, Add-ons, Notifications, Lock screen), SCREEN (Display, Night mode) and SYSTEM

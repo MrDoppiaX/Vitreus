@@ -61,11 +61,20 @@ while :; do
     # The themes (themes/*.toml and the person's own folder) first: the font setup and the shell both read the list it leaves in the data folder.
     "$(dirname "$(readlink -f "$0")")/vitreus-themes" "$data" 2>/dev/null || true
     fonts=$("$(dirname "$(readlink -f "$0")")/vitreus-fonts" "$data" 2>/dev/null) || fonts=""
+    # Settings > Display > Graphics card keeps its choice in gpu.json, for the shell itself: on, it is drawn on the discrete card (PLEAMAR_GPU=high),
+    # off, on the integrated one. Without the file the shell is drawn where it was started, as the autostart line says.
+    gpu_set=""; gpu_unset=""
+    if [ "$name" = vitreus ] && [ -f "$data/gpu.json" ]; then
+        if grep -q '"discrete"[[:space:]]*:[[:space:]]*true' "$data/gpu.json" 2> /dev/null; then gpu_set="PLEAMAR_GPU=high"; else gpu_unset="-u PLEAMAR_GPU"; fi
+    fi
+    # env takes its options (-u) before its NAME=value words: after the first of those, the next word is the command.
     if [ -n "$fonts" ]; then
-        FONTCONFIG_FILE="$fonts" pleamar --scene "$P" --no-hud >> "$L" 2>&1 9>&-
+        # shellcheck disable=SC2086
+        env $gpu_unset $gpu_set FONTCONFIG_FILE="$fonts" pleamar --scene "$P" --no-hud >> "$L" 2>&1 9>&-
     else
         # Not the font setup this keeper itself was started under (a theme change since): that one is no longer the shell's typeface.
-        env -u FONTCONFIG_FILE pleamar --scene "$P" --no-hud >> "$L" 2>&1 9>&-
+        # shellcheck disable=SC2086
+        env $gpu_unset -u FONTCONFIG_FILE $gpu_set pleamar --scene "$P" --no-hud >> "$L" 2>&1 9>&-
     fi
     code=$?
     alive || exit 0
